@@ -33,3 +33,5 @@ run_phonemizer.py
 *.png
 *.pdf
 *.pkl
+
+labs.ipynb
