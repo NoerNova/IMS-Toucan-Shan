@@ -7,6 +7,7 @@ import torch
 
 # HELPER FUNCTIONS
 
+
 def split_dictionary_into_chunks(input_dict, split_n):
     res = []
     new_dict = {}
@@ -43,7 +44,9 @@ def build_path_to_transcript_dict_multi_ling_librispeech_template(root):
         if line.strip() != "":
             fields = line.split("\t")
             wav_folders = fields[0].split("_")
-            wav_path = f"{root}/audio/{wav_folders[0]}/{wav_folders[1]}/{fields[0]}.flac"
+            wav_path = (
+                f"{root}/audio/{wav_folders[0]}/{wav_folders[1]}/{fields[0]}.flac"
+            )
             path_to_transcript[wav_path] = fields[1]
     return path_to_transcript
 
@@ -55,12 +58,16 @@ def build_path_to_transcript_dict_hui_template(root):
     path_to_transcript = dict()
     for el in os.listdir(root):
         if os.path.isdir(os.path.join(root, el)):
-            with open(os.path.join(root, el, "metadata.csv"), "r", encoding="utf8") as file:
+            with open(
+                os.path.join(root, el, "metadata.csv"), "r", encoding="utf8"
+            ) as file:
                 lookup = file.read()
             for line in lookup.split("\n"):
                 if line.strip() != "":
                     norm_transcript = line.split("|")[1]
-                    wav_path = os.path.join(root, el, "wavs", line.split("|")[0] + ".wav")
+                    wav_path = os.path.join(
+                        root, el, "wavs", line.split("|")[0] + ".wav"
+                    )
                     if os.path.exists(wav_path):
                         path_to_transcript[wav_path] = norm_transcript
     return path_to_transcript
@@ -68,12 +75,15 @@ def build_path_to_transcript_dict_hui_template(root):
 
 # ENGLISH
 
+
 def build_path_to_transcript_dict_mls_english(re_cache=False):
     lang = "english"
     root = f"/mount/resources/speech/corpora/MultiLingLibriSpeech/mls_{lang}/train"
     cache_path = f"/mount/resources/speech/corpora/MultiLingLibriSpeech/mls_{lang}/train/pttd_cache.pt"
     if not os.path.exists(cache_path) or re_cache:
-        path_to_transcript = build_path_to_transcript_dict_multi_ling_librispeech_template(root=root)
+        path_to_transcript = (
+            build_path_to_transcript_dict_multi_ling_librispeech_template(root=root)
+        )
         torch.save(path_to_transcript, cache_path)
     return torch.load(cache_path)
 
@@ -83,7 +93,11 @@ def build_path_to_transcript_dict_gigaspeech(re_cache=False):
     cache_path = os.path.join(root, "pttd_cache.pt")
     if not os.path.exists(cache_path) or re_cache:
         path_to_transcript = dict()
-        with open(os.path.join(root, "transcripts_only_clean_samples.txt"), "r", encoding="utf8") as file:
+        with open(
+            os.path.join(root, "transcripts_only_clean_samples.txt"),
+            "r",
+            encoding="utf8",
+        ) as file:
             lookup = file.read()
         for line in lookup.split("\n"):
             if line.strip() != "":
@@ -102,12 +116,16 @@ def build_path_to_transcript_dict_elizabeth(re_cache=False):
         path_to_transcript = dict()
         for el in os.listdir(root):
             if os.path.isdir(os.path.join(root, el)):
-                with open(os.path.join(root, el, "metadata.csv"), "r", encoding="utf8") as file:
+                with open(
+                    os.path.join(root, el, "metadata.csv"), "r", encoding="utf8"
+                ) as file:
                     lookup = file.read()
                 for line in lookup.split("\n"):
                     if line.strip() != "":
                         norm_transcript = line.split("|")[2]
-                        wav_path = os.path.join(root, el, "wavs", line.split("|")[0] + ".wav")
+                        wav_path = os.path.join(
+                            root, el, "wavs", line.split("|")[0] + ".wav"
+                        )
                         if os.path.exists(wav_path):
                             path_to_transcript[wav_path] = norm_transcript
         torch.save(path_to_transcript, cache_path)
@@ -152,18 +170,20 @@ def build_path_to_transcript_dict_CREMA_D(re_cache=False):
     root = "/mount/resources/speech/corpora/CREMA_D/"
     cache_path = os.path.join(root, "pttd_cache.pt")
     if not os.path.exists(cache_path) or re_cache:
-        identifier_to_sent = {"IEO": "It's eleven o'clock.",
-                              "TIE": "That is exactly what happened.",
-                              "IOM": "I'm on my way to the meeting.",
-                              "IWW": "I wonder what this is about.",
-                              "TAI": "The airplane is almost full.",
-                              "MTI": "Maybe tomorrow it will be cold.",
-                              "IWL": "I would like a new alarm clock.",
-                              "ITH": "I think, I have a doctor's appointment.",
-                              "DFA": "Don't forget a jacket.",
-                              "ITS": "I think, I've seen this before.",
-                              "TSI": "The surface is slick.",
-                              "WSI": "We'll stop in a couple of minutes."}
+        identifier_to_sent = {
+            "IEO": "It's eleven o'clock.",
+            "TIE": "That is exactly what happened.",
+            "IOM": "I'm on my way to the meeting.",
+            "IWW": "I wonder what this is about.",
+            "TAI": "The airplane is almost full.",
+            "MTI": "Maybe tomorrow it will be cold.",
+            "IWL": "I would like a new alarm clock.",
+            "ITH": "I think, I have a doctor's appointment.",
+            "DFA": "Don't forget a jacket.",
+            "ITS": "I think, I've seen this before.",
+            "TSI": "The surface is slick.",
+            "WSI": "We'll stop in a couple of minutes.",
+        }
         path_to_transcript = dict()
         for file in os.listdir(root):
             if file.endswith(".wav"):
@@ -214,9 +234,13 @@ def build_path_to_transcript_dict_RAVDESS(re_cache=False):
         for speaker_dir in os.listdir(root):
             for audio_file in os.listdir(os.path.join(root, speaker_dir)):
                 if audio_file.split("-")[4] == "01":
-                    path_to_transcript_dict[os.path.join(root, speaker_dir, audio_file)] = "Kids are talking by the door."
+                    path_to_transcript_dict[
+                        os.path.join(root, speaker_dir, audio_file)
+                    ] = "Kids are talking by the door."
                 else:
-                    path_to_transcript_dict[os.path.join(root, speaker_dir, audio_file)] = "Dogs are sitting by the door."
+                    path_to_transcript_dict[
+                        os.path.join(root, speaker_dir, audio_file)
+                    ] = "Dogs are sitting by the door."
         torch.save(path_to_transcript_dict, cache_path)
     return torch.load(cache_path)
 
@@ -229,13 +253,21 @@ def build_path_to_transcript_dict_ESDS(re_cache=False):
         for speaker_dir in os.listdir(root):
             if speaker_dir.startswith("00"):
                 if int(speaker_dir) > 10:
-                    with open(f"{root}/{speaker_dir}/fixed_unicode.txt", mode="r", encoding="utf8") as f:
+                    with open(
+                        f"{root}/{speaker_dir}/fixed_unicode.txt",
+                        mode="r",
+                        encoding="utf8",
+                    ) as f:
                         transcripts = f.read()
-                    for line in transcripts.replace("\n\n", "\n").replace(",", ", ").split("\n"):
+                    for line in (
+                        transcripts.replace("\n\n", "\n").replace(",", ", ").split("\n")
+                    ):
                         if line.strip() != "":
                             filename, text, emo_dir = line.split("\t")
                             filename = speaker_dir + "_" + filename.split("_")[1]
-                            path_to_transcript_dict[f"{root}/{speaker_dir}/{emo_dir}/{filename}.wav"] = text
+                            path_to_transcript_dict[
+                                f"{root}/{speaker_dir}/{emo_dir}/{filename}.wav"
+                            ] = text
         torch.save(path_to_transcript_dict, cache_path)
     return torch.load(cache_path)
 
@@ -247,16 +279,19 @@ def build_path_to_transcript_dict_nvidia_hifitts(re_cache=False):
         path_to_transcript = dict()
         transcripts = list()
         import json
-        for jpath in [f"{root}/6097_manifest_clean_dev.json",
-                      f"{root}/6097_manifest_clean_test.json",
-                      f"{root}/6097_manifest_clean_train.json",
-                      f"{root}/9017_manifest_clean_dev.json",
-                      f"{root}/9017_manifest_clean_test.json",
-                      f"{root}/9017_manifest_clean_train.json",
-                      f"{root}/92_manifest_clean_dev.json",
-                      f"{root}/92_manifest_clean_test.json",
-                      f"{root}/92_manifest_clean_train.json"]:
-            with open(jpath, encoding='utf-8', mode='r') as jfile:
+
+        for jpath in [
+            f"{root}/6097_manifest_clean_dev.json",
+            f"{root}/6097_manifest_clean_test.json",
+            f"{root}/6097_manifest_clean_train.json",
+            f"{root}/9017_manifest_clean_dev.json",
+            f"{root}/9017_manifest_clean_test.json",
+            f"{root}/9017_manifest_clean_train.json",
+            f"{root}/92_manifest_clean_dev.json",
+            f"{root}/92_manifest_clean_test.json",
+            f"{root}/92_manifest_clean_train.json",
+        ]:
+            with open(jpath, encoding="utf-8", mode="r") as jfile:
                 for line in jfile.read().split("\n"):
                     if line.strip() != "":
                         transcripts.append(json.loads(line))
@@ -279,11 +314,25 @@ def build_path_to_transcript_dict_blizzard_2013(re_cache=False):
         for block in blocks:
             trans_lines = block.split("\n")
             if trans_lines[0].strip() != "":
-                transcript = trans_lines[1].replace("@", "").replace("#", ",").replace("|", "").replace(";", ",").replace(
-                    ":", ",").replace(" 's", "'s").replace(", ,", ",").replace("  ", " ").replace(" ,", ",").replace(" .",
-                                                                                                                     ".").replace(
-                    " ?", "?").replace(" !", "!").rstrip(" ,")
-                path_to_transcript[root + "wavn/" + trans_lines[0] + ".wav"] = transcript
+                transcript = (
+                    trans_lines[1]
+                    .replace("@", "")
+                    .replace("#", ",")
+                    .replace("|", "")
+                    .replace(";", ",")
+                    .replace(":", ",")
+                    .replace(" 's", "'s")
+                    .replace(", ,", ",")
+                    .replace("  ", " ")
+                    .replace(" ,", ",")
+                    .replace(" .", ".")
+                    .replace(" ?", "?")
+                    .replace(" !", "!")
+                    .rstrip(" ,")
+                )
+                path_to_transcript[root + "wavn/" + trans_lines[0] + ".wav"] = (
+                    transcript
+                )
         torch.save(path_to_transcript, cache_path)
     return torch.load(cache_path)
 
@@ -294,13 +343,22 @@ def build_path_to_transcript_dict_vctk(re_cache=False):
     if not os.path.exists(cache_path) or re_cache:
         path_to_transcript = dict()
         for transcript_dir in os.listdir("/mount/resources/speech/corpora/VCTK/txt"):
-            for transcript_file in os.listdir(f"/mount/resources/speech/corpora/VCTK/txt/{transcript_dir}"):
+            for transcript_file in os.listdir(
+                f"/mount/resources/speech/corpora/VCTK/txt/{transcript_dir}"
+            ):
                 if transcript_file.endswith(".txt"):
-                    with open(f"/mount/resources/speech/corpora/VCTK/txt/{transcript_dir}/" + transcript_file, 'r',
-                              encoding='utf8') as tf:
+                    with open(
+                        f"/mount/resources/speech/corpora/VCTK/txt/{transcript_dir}/"
+                        + transcript_file,
+                        "r",
+                        encoding="utf8",
+                    ) as tf:
                         transcript = tf.read()
-                    wav_path = f"/mount/resources/speech/corpora/VCTK/wav48_silence_trimmed/{transcript_dir}/" + transcript_file.rstrip(
-                        ".txt") + "_mic2.flac"
+                    wav_path = (
+                        f"/mount/resources/speech/corpora/VCTK/wav48_silence_trimmed/{transcript_dir}/"
+                        + transcript_file.rstrip(".txt")
+                        + "_mic2.flac"
+                    )
                     if os.path.exists(wav_path):
                         path_to_transcript[wav_path] = transcript
         torch.save(path_to_transcript, cache_path)
@@ -317,10 +375,16 @@ def build_path_to_transcript_dict_libritts_all_clean(re_cache=False):
             for chapter in os.listdir(os.path.join(path_train, speaker)):
                 for file in os.listdir(os.path.join(path_train, speaker, chapter)):
                     if file.endswith("normalized.txt"):
-                        with open(os.path.join(path_train, speaker, chapter, file), 'r', encoding='utf8') as tf:
+                        with open(
+                            os.path.join(path_train, speaker, chapter, file),
+                            "r",
+                            encoding="utf8",
+                        ) as tf:
                             transcript = tf.read()
                         wav_file = file.split(".")[0] + ".wav"
-                        path_to_transcript[os.path.join(path_train, speaker, chapter, wav_file)] = transcript
+                        path_to_transcript[
+                            os.path.join(path_train, speaker, chapter, wav_file)
+                        ] = transcript
         torch.save(path_to_transcript, cache_path)
     return torch.load(cache_path)
 
@@ -335,10 +399,16 @@ def build_path_to_transcript_dict_libritts_other500(re_cache=False):
             for chapter in os.listdir(os.path.join(path_train, speaker)):
                 for file in os.listdir(os.path.join(path_train, speaker, chapter)):
                     if file.endswith("normalized.txt"):
-                        with open(os.path.join(path_train, speaker, chapter, file), 'r', encoding='utf8') as tf:
+                        with open(
+                            os.path.join(path_train, speaker, chapter, file),
+                            "r",
+                            encoding="utf8",
+                        ) as tf:
                             transcript = tf.read()
                         wav_file = file.split(".")[0] + ".wav"
-                        path_to_transcript[os.path.join(path_train, speaker, chapter, wav_file)] = transcript
+                        path_to_transcript[
+                            os.path.join(path_train, speaker, chapter, wav_file)
+                        ] = transcript
         torch.save(path_to_transcript, cache_path)
     return torch.load(cache_path)
 
@@ -348,10 +418,20 @@ def build_path_to_transcript_dict_ljspeech(re_cache=False):
     cache_path = os.path.join(root, "pttd_cache.pt")
     if not os.path.exists(cache_path) or re_cache:
         path_to_transcript = dict()
-        for transcript_file in os.listdir("/mount/resources/speech/corpora/LJSpeech/16kHz/txt"):
-            with open("/mount/resources/speech/corpora/LJSpeech/16kHz/txt/" + transcript_file, 'r', encoding='utf8') as tf:
+        for transcript_file in os.listdir(
+            "/mount/resources/speech/corpora/LJSpeech/16kHz/txt"
+        ):
+            with open(
+                "/mount/resources/speech/corpora/LJSpeech/16kHz/txt/" + transcript_file,
+                "r",
+                encoding="utf8",
+            ) as tf:
                 transcript = tf.read()
-            wav_path = "/mount/resources/speech/corpora/LJSpeech/16kHz/wav/" + transcript_file.rstrip(".txt") + ".wav"
+            wav_path = (
+                "/mount/resources/speech/corpora/LJSpeech/16kHz/wav/"
+                + transcript_file.rstrip(".txt")
+                + ".wav"
+            )
             path_to_transcript[wav_path] = transcript
         torch.save(path_to_transcript, cache_path)
     return torch.load(cache_path)
@@ -368,24 +448,33 @@ def build_path_to_transcript_dict_jenny(re_cache=False):
     cache_path = os.path.join(root, "pttd_cache.pt")
     if not os.path.exists(cache_path) or re_cache:
         path_to_transcript = dict()
-        with open("/mount/resources/speech/corpora/Jenny/metadata.csv", encoding="utf8") as f:
+        with open(
+            "/mount/resources/speech/corpora/Jenny/metadata.csv", encoding="utf8"
+        ) as f:
             transcriptions = f.read()
         trans_lines = transcriptions.split("\n")
         for line in trans_lines:
             if line.strip() != "":
-                path_to_transcript["/mount/resources/speech/corpora/Jenny/" + line.split("|")[0] + "_silence.flac"] = line.split("|")[1]
+                path_to_transcript[
+                    "/mount/resources/speech/corpora/Jenny/"
+                    + line.split("|")[0]
+                    + "_silence.flac"
+                ] = line.split("|")[1]
         torch.save(path_to_transcript, cache_path)
     return torch.load(cache_path)
 
 
 # GERMAN
 
+
 def build_path_to_transcript_dict_mls_german(re_cache=False):
     lang = "german"
     root = f"/mount/resources/speech/corpora/MultiLingLibriSpeech/mls_{lang}/train"
     cache_path = os.path.join(root, "pttd_cache.pt")
     if not os.path.exists(cache_path) or re_cache:
-        path_to_transcript = build_path_to_transcript_dict_multi_ling_librispeech_template(root=root)
+        path_to_transcript = (
+            build_path_to_transcript_dict_multi_ling_librispeech_template(root=root)
+        )
         torch.save(path_to_transcript, cache_path)
     return torch.load(cache_path)
 
@@ -441,7 +530,9 @@ def build_path_to_transcript_dict_hui_others(re_cache=False):
     if not os.path.exists(cache_path) or re_cache:
         pttd = dict()
         for speaker in os.listdir(root):
-            pttd.update(build_path_to_transcript_dict_hui_template(root=f"{root}/{speaker}"))
+            pttd.update(
+                build_path_to_transcript_dict_hui_template(root=f"{root}/{speaker}")
+            )
         torch.save(pttd, cache_path)
     return torch.load(cache_path)
 
@@ -458,14 +549,17 @@ def build_path_to_transcript_dict_thorsten_neutral(re_cache=False):
         trans_lines = transcriptions.split("\n")
         for line in trans_lines:
             if line.strip() != "":
-                path_to_transcript[root + "/wavs/" + line.split("|")[0] + ".wav"] = \
+                path_to_transcript[root + "/wavs/" + line.split("|")[0] + ".wav"] = (
                     line.split("|")[1]
+                )
         torch.save(path_to_transcript, cache_path)
     return torch.load(cache_path)
 
 
 def build_path_to_transcript_dict_thorsten_2022_10(re_cache=False):
-    root = "/mount/resources/speech/corpora/ThorstenDatasets/ThorstenVoice-Dataset_2022.10"
+    root = (
+        "/mount/resources/speech/corpora/ThorstenDatasets/ThorstenVoice-Dataset_2022.10"
+    )
     cache_path = os.path.join(root, "pttd_cache.pt")
     if not os.path.exists(cache_path) or re_cache:
         path_to_transcript = dict()
@@ -478,8 +572,9 @@ def build_path_to_transcript_dict_thorsten_2022_10(re_cache=False):
         trans_lines = transcriptions.split("\n")
         for line in trans_lines:
             if line.strip() != "":
-                path_to_transcript[root + "/wavs/" + line.split("|")[0] + ".wav"] = \
+                path_to_transcript[root + "/wavs/" + line.split("|")[0] + ".wav"] = (
                     line.split("|")[1]
+                )
         torch.save(path_to_transcript, cache_path)
     return torch.load(cache_path)
 
@@ -494,24 +589,39 @@ def build_path_to_transcript_dict_thorsten_emotional(re_cache=False):
         trans_lines = transcriptions.split("\n")
         for line in trans_lines:
             if line.strip() != "":
-                path_to_transcript[root + "/amused/" + line.split("|")[0] + ".wav"] = line.split("|")[1]
-                path_to_transcript[root + "/angry/" + line.split("|")[0] + ".wav"] = line.split("|")[1]
-                path_to_transcript[root + "/disgusted/" + line.split("|")[0] + ".wav"] = line.split("|")[1]
-                path_to_transcript[root + "/neutral/" + line.split("|")[0] + ".wav"] = line.split("|")[1]
-                path_to_transcript[root + "/sleepy/" + line.split("|")[0] + ".wav"] = line.split("|")[1]
-                path_to_transcript[root + "/surprised/" + line.split("|")[0] + ".wav"] = line.split("|")[1]
+                path_to_transcript[root + "/amused/" + line.split("|")[0] + ".wav"] = (
+                    line.split("|")[1]
+                )
+                path_to_transcript[root + "/angry/" + line.split("|")[0] + ".wav"] = (
+                    line.split("|")[1]
+                )
+                path_to_transcript[
+                    root + "/disgusted/" + line.split("|")[0] + ".wav"
+                ] = line.split("|")[1]
+                path_to_transcript[root + "/neutral/" + line.split("|")[0] + ".wav"] = (
+                    line.split("|")[1]
+                )
+                path_to_transcript[root + "/sleepy/" + line.split("|")[0] + ".wav"] = (
+                    line.split("|")[1]
+                )
+                path_to_transcript[
+                    root + "/surprised/" + line.split("|")[0] + ".wav"
+                ] = line.split("|")[1]
         torch.save(path_to_transcript, cache_path)
     return torch.load(cache_path)
 
 
 # FRENCH
 
+
 def build_path_to_transcript_dict_mls_french(re_cache=False):
     lang = "french"
     root = f"/mount/resources/speech/corpora/MultiLingLibriSpeech/mls_{lang}/train"
     cache_path = os.path.join(root, "pttd_cache.pt")
     if not os.path.exists(cache_path) or re_cache:
-        path_to_transcript = build_path_to_transcript_dict_multi_ling_librispeech_template(root=root)
+        path_to_transcript = (
+            build_path_to_transcript_dict_multi_ling_librispeech_template(root=root)
+        )
         torch.save(path_to_transcript, cache_path)
     return torch.load(cache_path)
 
@@ -528,7 +638,15 @@ def build_path_to_transcript_dict_blizzard2023_ad_silence_removed(re_cache=False
                 norm_transcript = line.split("\t")[1]
                 wav_path = os.path.join(root, line.split("\t")[0].split("/")[-1])
                 if os.path.exists(wav_path):
-                    path_to_transcript[wav_path] = norm_transcript.replace("§", "").replace("#", "").replace("~", "").replace(" »", '"').replace("« ", '"').replace("»", '"').replace("«", '"')
+                    path_to_transcript[wav_path] = (
+                        norm_transcript.replace("§", "")
+                        .replace("#", "")
+                        .replace("~", "")
+                        .replace(" »", '"')
+                        .replace("« ", '"')
+                        .replace("»", '"')
+                        .replace("«", '"')
+                    )
         torch.save(path_to_transcript, cache_path)
     return torch.load(cache_path)
 
@@ -545,7 +663,15 @@ def build_path_to_transcript_dict_blizzard2023_neb_silence_removed(re_cache=Fals
                 norm_transcript = line.split("\t")[1]
                 wav_path = os.path.join(root, line.split("\t")[0].split("/")[-1])
                 if os.path.exists(wav_path):
-                    path_to_transcript[wav_path] = norm_transcript.replace("§", "").replace("#", "").replace("~", "").replace(" »", '"').replace("« ", '"').replace("»", '"').replace("«", '"')
+                    path_to_transcript[wav_path] = (
+                        norm_transcript.replace("§", "")
+                        .replace("#", "")
+                        .replace("~", "")
+                        .replace(" »", '"')
+                        .replace("« ", '"')
+                        .replace("»", '"')
+                        .replace("«", '"')
+                    )
         torch.save(path_to_transcript, cache_path)
     return torch.load(cache_path)
 
@@ -562,7 +688,15 @@ def build_path_to_transcript_dict_blizzard2023_neb_e_silence_removed(re_cache=Fa
                 norm_transcript = line.split("\t")[1]
                 wav_path = os.path.join(root, line.split("\t")[0].split("/")[-1])
                 if os.path.exists(wav_path):
-                    path_to_transcript[wav_path] = norm_transcript.replace("§", "").replace("#", "").replace("~", "").replace(" »", '"').replace("« ", '"').replace("»", '"').replace("«", '"')
+                    path_to_transcript[wav_path] = (
+                        norm_transcript.replace("§", "")
+                        .replace("#", "")
+                        .replace("~", "")
+                        .replace(" »", '"')
+                        .replace("« ", '"')
+                        .replace("»", '"')
+                        .replace("«", '"')
+                    )
         torch.save(path_to_transcript, cache_path)
     return torch.load(cache_path)
 
@@ -575,11 +709,15 @@ def build_path_to_transcript_dict_synpaflex_norm_subset(re_cache=False):
     cache_path = os.path.join(root, "pttd_cache.pt")
     if not os.path.exists(cache_path) or re_cache:
         path_to_transcript = dict()
-        for text_path in glob.iglob(os.path.join(root, "**/*_norm.txt"), recursive=True):
+        for text_path in glob.iglob(
+            os.path.join(root, "**/*_norm.txt"), recursive=True
+        ):
             with open(text_path, "r", encoding="utf8") as file:
                 norm_transcript = file.read()
             path_obj = Path(text_path)
-            wav_path = str((path_obj.parent.parent / path_obj.name[:-9]).with_suffix(".wav"))
+            wav_path = str(
+                (path_obj.parent.parent / path_obj.name[:-9]).with_suffix(".wav")
+            )
             if Path(wav_path).exists():
                 path_to_transcript[wav_path] = norm_transcript
         torch.save(path_to_transcript, cache_path)
@@ -601,7 +739,11 @@ def build_path_to_transcript_dict_siwis_subset(re_cache=False):
                 with open(text_path, "r", encoding="utf8") as file:
                     norm_transcript = file.read()
                 path_obj = Path(text_path)
-                wav_path = str((path_obj.parent.parent.parent / "wavs" / sd / path_obj.stem).with_suffix(".wav"))
+                wav_path = str(
+                    (
+                        path_obj.parent.parent.parent / "wavs" / sd / path_obj.stem
+                    ).with_suffix(".wav")
+                )
                 if Path(wav_path).exists():
                     path_to_transcript[wav_path] = norm_transcript
         torch.save(path_to_transcript, cache_path)
@@ -614,25 +756,32 @@ def build_path_to_transcript_dict_css10fr(re_cache=False):
     cache_path = os.path.join(root, "pttd_cache.pt")
     if not os.path.exists(cache_path) or re_cache:
         path_to_transcript = dict()
-        with open(f"/mount/resources/speech/corpora/CSS10/{language}/transcript.txt", encoding="utf8") as f:
+        with open(
+            f"/mount/resources/speech/corpora/CSS10/{language}/transcript.txt",
+            encoding="utf8",
+        ) as f:
             transcriptions = f.read()
         trans_lines = transcriptions.split("\n")
         for line in trans_lines:
             if line.strip() != "":
-                path_to_transcript[f"/mount/resources/speech/corpora/CSS10/{language}/{line.split('|')[0]}"] = \
-                    line.split("|")[2]
+                path_to_transcript[
+                    f"/mount/resources/speech/corpora/CSS10/{language}/{line.split('|')[0]}"
+                ] = line.split("|")[2]
         torch.save(path_to_transcript, cache_path)
     return torch.load(cache_path)
 
 
 # SPANISH
 
+
 def build_path_to_transcript_dict_mls_spanish(re_cache=False):
     lang = "spanish"
     root = f"/mount/resources/speech/corpora/MultiLingLibriSpeech/mls_{lang}/train"
     cache_path = os.path.join(root, "pttd_cache.pt")
     if not os.path.exists(cache_path) or re_cache:
-        path_to_transcript = build_path_to_transcript_dict_multi_ling_librispeech_template(root=root)
+        path_to_transcript = (
+            build_path_to_transcript_dict_multi_ling_librispeech_template(root=root)
+        )
         torch.save(path_to_transcript, cache_path)
     return torch.load(cache_path)
 
@@ -643,13 +792,17 @@ def build_path_to_transcript_dict_css10es(re_cache=False):
     cache_path = os.path.join(root, "pttd_cache.pt")
     if not os.path.exists(cache_path) or re_cache:
         path_to_transcript = dict()
-        with open(f"/mount/resources/speech/corpora/CSS10/{language}/transcript.txt", encoding="utf8") as f:
+        with open(
+            f"/mount/resources/speech/corpora/CSS10/{language}/transcript.txt",
+            encoding="utf8",
+        ) as f:
             transcriptions = f.read()
         trans_lines = transcriptions.split("\n")
         for line in trans_lines:
             if line.strip() != "":
-                path_to_transcript[f"/mount/resources/speech/corpora/CSS10/{language}/{line.split('|')[0]}"] = \
-                    line.split("|")[2]
+                path_to_transcript[
+                    f"/mount/resources/speech/corpora/CSS10/{language}/{line.split('|')[0]}"
+                ] = line.split("|")[2]
         torch.save(path_to_transcript, cache_path)
     return torch.load(cache_path)
 
@@ -673,48 +826,60 @@ def build_path_to_transcript_dict_spanish_blizzard_train(re_cache=False):
 
 # PORTUGUESE
 
+
 def build_path_to_transcript_dict_mls_portuguese(re_cache=False):
     lang = "portuguese"
     root = f"/mount/resources/speech/corpora/MultiLingLibriSpeech/mls_{lang}/train"
     cache_path = os.path.join(root, "pttd_cache.pt")
     if not os.path.exists(cache_path) or re_cache:
-        path_to_transcript = build_path_to_transcript_dict_multi_ling_librispeech_template(root=root)
+        path_to_transcript = (
+            build_path_to_transcript_dict_multi_ling_librispeech_template(root=root)
+        )
         torch.save(path_to_transcript, cache_path)
     return torch.load(cache_path)
 
 
 # POLISH
 
+
 def build_path_to_transcript_dict_mls_polish(re_cache=False):
     lang = "polish"
     root = f"/mount/resources/speech/corpora/MultiLingLibriSpeech/mls_{lang}/train"
     cache_path = os.path.join(root, "pttd_cache.pt")
     if not os.path.exists(cache_path) or re_cache:
-        path_to_transcript = build_path_to_transcript_dict_multi_ling_librispeech_template(root=root)
+        path_to_transcript = (
+            build_path_to_transcript_dict_multi_ling_librispeech_template(root=root)
+        )
         torch.save(path_to_transcript, cache_path)
     return torch.load(cache_path)
 
 
 # ITALIAN
 
+
 def build_path_to_transcript_dict_mls_italian(re_cache=False):
     lang = "italian"
     root = f"/mount/resources/speech/corpora/MultiLingLibriSpeech/mls_{lang}/train"
     cache_path = os.path.join(root, "pttd_cache.pt")
     if not os.path.exists(cache_path) or re_cache:
-        path_to_transcript = build_path_to_transcript_dict_multi_ling_librispeech_template(root=root)
+        path_to_transcript = (
+            build_path_to_transcript_dict_multi_ling_librispeech_template(root=root)
+        )
         torch.save(path_to_transcript, cache_path)
     return torch.load(cache_path)
 
 
 # DUTCH
 
+
 def build_path_to_transcript_dict_mls_dutch(re_cache=False):
     lang = "dutch"
     root = f"/mount/resources/speech/corpora/MultiLingLibriSpeech/mls_{lang}/train"
     cache_path = os.path.join(root, "pttd_cache.pt")
     if not os.path.exists(cache_path) or re_cache:
-        path_to_transcript = build_path_to_transcript_dict_multi_ling_librispeech_template(root=root)
+        path_to_transcript = (
+            build_path_to_transcript_dict_multi_ling_librispeech_template(root=root)
+        )
         torch.save(path_to_transcript, cache_path)
     return torch.load(cache_path)
 
@@ -725,18 +890,23 @@ def build_path_to_transcript_dict_css10nl(re_cache=False):
     cache_path = os.path.join(root, "pttd_cache.pt")
     if not os.path.exists(cache_path) or re_cache:
         path_to_transcript = dict()
-        with open(f"/mount/resources/speech/corpora/CSS10/{language}/transcript.txt", encoding="utf8") as f:
+        with open(
+            f"/mount/resources/speech/corpora/CSS10/{language}/transcript.txt",
+            encoding="utf8",
+        ) as f:
             transcriptions = f.read()
         trans_lines = transcriptions.split("\n")
         for line in trans_lines:
             if line.strip() != "":
-                path_to_transcript[f"/mount/resources/speech/corpora/CSS10/{language}/{line.split('|')[0]}"] = \
-                    line.split("|")[2]
+                path_to_transcript[
+                    f"/mount/resources/speech/corpora/CSS10/{language}/{line.split('|')[0]}"
+                ] = line.split("|")[2]
         torch.save(path_to_transcript, cache_path)
     return torch.load(cache_path)
 
 
 # GREEK
+
 
 def build_path_to_transcript_dict_css10el(re_cache=False):
     language = "greek"
@@ -744,18 +914,23 @@ def build_path_to_transcript_dict_css10el(re_cache=False):
     cache_path = os.path.join(root, "pttd_cache.pt")
     if not os.path.exists(cache_path) or re_cache:
         path_to_transcript = dict()
-        with open(f"/mount/resources/speech/corpora/CSS10/{language}/transcript.txt", encoding="utf8") as f:
+        with open(
+            f"/mount/resources/speech/corpora/CSS10/{language}/transcript.txt",
+            encoding="utf8",
+        ) as f:
             transcriptions = f.read()
         trans_lines = transcriptions.split("\n")
         for line in trans_lines:
             if line.strip() != "":
-                path_to_transcript[f"/mount/resources/speech/corpora/CSS10/{language}/{line.split('|')[0]}"] = \
-                    line.split("|")[2]
+                path_to_transcript[
+                    f"/mount/resources/speech/corpora/CSS10/{language}/{line.split('|')[0]}"
+                ] = line.split("|")[2]
         torch.save(path_to_transcript, cache_path)
     return torch.load(cache_path)
 
 
 # FINNISH
+
 
 def build_path_to_transcript_dict_css10fi(re_cache=False):
     language = "finnish"
@@ -763,13 +938,17 @@ def build_path_to_transcript_dict_css10fi(re_cache=False):
     cache_path = os.path.join(root, "pttd_cache.pt")
     if not os.path.exists(cache_path) or re_cache:
         path_to_transcript = dict()
-        with open(f"/mount/resources/speech/corpora/CSS10/{language}/transcript.txt", encoding="utf8") as f:
+        with open(
+            f"/mount/resources/speech/corpora/CSS10/{language}/transcript.txt",
+            encoding="utf8",
+        ) as f:
             transcriptions = f.read()
         trans_lines = transcriptions.split("\n")
         for line in trans_lines:
             if line.strip() != "":
-                path_to_transcript[f"/mount/resources/speech/corpora/CSS10/{language}/{line.split('|')[0]}"] = \
-                    line.split("|")[2]
+                path_to_transcript[
+                    f"/mount/resources/speech/corpora/CSS10/{language}/{line.split('|')[0]}"
+                ] = line.split("|")[2]
         torch.save(path_to_transcript, cache_path)
     return torch.load(cache_path)
 
@@ -805,12 +984,15 @@ def build_path_to_transcript_dict_vietTTS(re_cache=False):
                 parsed_line = line.split(".wav")
                 audio_path = parsed_line[0]
                 transcript = parsed_line[1]
-                path_to_transcript[os.path.join(root, audio_path + ".wav")] = transcript.strip()
+                path_to_transcript[os.path.join(root, audio_path + ".wav")] = (
+                    transcript.strip()
+                )
         torch.save(path_to_transcript, cache_path)
     return torch.load(cache_path)
 
 
 # CHINESE
+
 
 def build_path_to_transcript_dict_aishell3(re_cache=False):
     root = "/mount/resources/speech/corpora/aishell3/train"
@@ -835,17 +1017,24 @@ def build_path_to_transcript_dict_css10cmn(re_cache=False):
     cache_path = os.path.join(root, "pttd_cache.pt")
     if not os.path.exists(cache_path) or re_cache:
         path_to_transcript = dict()
-        with open("/mount/resources/speech/corpora/CSS10/chinese/transcript.txt", encoding="utf8") as f:
+        with open(
+            "/mount/resources/speech/corpora/CSS10/chinese/transcript.txt",
+            encoding="utf8",
+        ) as f:
             transcriptions = f.read()
         trans_lines = transcriptions.split("\n")
         for line in trans_lines:
             if line.strip() != "":
-                path_to_transcript["/mount/resources/speech/corpora/CSS10/chinese/" + line.split("|")[0]] = line.split("|")[2]
+                path_to_transcript[
+                    "/mount/resources/speech/corpora/CSS10/chinese/"
+                    + line.split("|")[0]
+                ] = line.split("|")[2]
         torch.save(path_to_transcript, cache_path)
     return torch.load(cache_path)
 
 
 # RUSSIAN
+
 
 def build_path_to_transcript_dict_css10ru(re_cache=False):
     language = "russian"
@@ -853,18 +1042,23 @@ def build_path_to_transcript_dict_css10ru(re_cache=False):
     cache_path = os.path.join(root, "pttd_cache.pt")
     if not os.path.exists(cache_path) or re_cache:
         path_to_transcript = dict()
-        with open(f"/mount/resources/speech/corpora/CSS10/{language}/transcript.txt", encoding="utf8") as f:
+        with open(
+            f"/mount/resources/speech/corpora/CSS10/{language}/transcript.txt",
+            encoding="utf8",
+        ) as f:
             transcriptions = f.read()
         trans_lines = transcriptions.split("\n")
         for line in trans_lines:
             if line.strip() != "":
-                path_to_transcript[f"/mount/resources/speech/corpora/CSS10/{language}/{line.split('|')[0]}"] = \
-                    line.split("|")[2]
+                path_to_transcript[
+                    f"/mount/resources/speech/corpora/CSS10/{language}/{line.split('|')[0]}"
+                ] = line.split("|")[2]
         torch.save(path_to_transcript, cache_path)
     return torch.load(cache_path)
 
 
 # HUNGARIAN
+
 
 def build_path_to_transcript_dict_css10hu(re_cache=False):
     language = "hungarian"
@@ -873,18 +1067,23 @@ def build_path_to_transcript_dict_css10hu(re_cache=False):
     if not os.path.exists(cache_path) or re_cache:
         path_to_transcript = dict()
         language = "hungarian"
-        with open(f"/mount/resources/speech/corpora/CSS10/{language}/transcript.txt", encoding="utf8") as f:
+        with open(
+            f"/mount/resources/speech/corpora/CSS10/{language}/transcript.txt",
+            encoding="utf8",
+        ) as f:
             transcriptions = f.read()
         trans_lines = transcriptions.split("\n")
         for line in trans_lines:
             if line.strip() != "":
-                path_to_transcript[f"/mount/resources/speech/corpora/CSS10/{language}/{line.split('|')[0]}"] = \
-                    line.split("|")[2]
+                path_to_transcript[
+                    f"/mount/resources/speech/corpora/CSS10/{language}/{line.split('|')[0]}"
+                ] = line.split("|")[2]
         torch.save(path_to_transcript, cache_path)
     return torch.load(cache_path)
 
 
 # OTHER
+
 
 def build_file_list_singing_voice_audio_database(re_cache=False):
     root = "/mount/resources/speech/corpora/singing_voice_audio_dataset/monophonic"
@@ -906,13 +1105,13 @@ import json
 
 
 def build_path_to_transcript_dict_nst_norwegian():
-    root = '/resources/speech/corpora/NST_norwegian/pcm/cs'
+    root = "/resources/speech/corpora/NST_norwegian/pcm/cs"
     path_to_transcript = dict()
-    audio_paths = sorted(list(Path(root).glob('*.pcm')))
+    audio_paths = sorted(list(Path(root).glob("*.pcm")))
     i = 0
-    with open(Path(root, 'SCRIPTS/CTTS_core'), encoding='latin-1') as f:
+    with open(Path(root, "SCRIPTS/CTTS_core"), encoding="latin-1") as f:
         for line in f:
-            transcript = line.strip().replace('\xad', '')
+            transcript = line.strip().replace("\xad", "")
             path = str(audio_paths[i].absolute())
             path_to_transcript[path] = transcript
             i += 1
@@ -920,18 +1119,18 @@ def build_path_to_transcript_dict_nst_norwegian():
 
 
 def build_path_to_transcript_dict_nst_swedish():
-    root = '/resources/speech/corpora/NST_swedish/sw_pcms'
+    root = "/resources/speech/corpora/NST_swedish/sw_pcms"
     path_to_transcript = dict()
-    audio_paths = sorted(list(Path(root, 'mf').glob('*.pcm')))
+    audio_paths = sorted(list(Path(root, "mf").glob("*.pcm")))
     audio_paths.insert(4154, None)
     audio_paths.insert(5144, None)
     i = 0
-    with open(Path(root, 'scripts/mf/sw_all'), encoding='latin-1') as f:
+    with open(Path(root, "scripts/mf/sw_all"), encoding="latin-1") as f:
         for line in f:
             if i == 4154 or i == 5144:
                 i += 1
                 continue
-            transcript = line.strip().replace('\xad', '')
+            transcript = line.strip().replace("\xad", "")
             path = str(audio_paths[i].absolute())
             path_to_transcript[path] = transcript
             i += 1
@@ -939,67 +1138,67 @@ def build_path_to_transcript_dict_nst_swedish():
 
 
 def build_path_to_transcript_dict_nchlt_afr():
-    root = '/resources/speech/corpora/nchlt_afr'
-    return build_path_to_transcript_dict_nchlt_template(root, lang_code='afr')
+    root = "/resources/speech/corpora/nchlt_afr"
+    return build_path_to_transcript_dict_nchlt_template(root, lang_code="afr")
 
 
 def build_path_to_transcript_dict_nchlt_nbl():
-    root = '/resources/speech/corpora/nchlt_nbl'
-    return build_path_to_transcript_dict_nchlt_template(root, lang_code='nbl')
+    root = "/resources/speech/corpora/nchlt_nbl"
+    return build_path_to_transcript_dict_nchlt_template(root, lang_code="nbl")
 
 
 def build_path_to_transcript_dict_nchlt_nso():
-    root = '/resources/speech/corpora/nchlt_nso'
-    return build_path_to_transcript_dict_nchlt_template(root, lang_code='nso')
+    root = "/resources/speech/corpora/nchlt_nso"
+    return build_path_to_transcript_dict_nchlt_template(root, lang_code="nso")
 
 
 def build_path_to_transcript_dict_nchlt_sot():
-    root = '/resources/speech/corpora/nchlt_sot'
-    return build_path_to_transcript_dict_nchlt_template(root, lang_code='sot')
+    root = "/resources/speech/corpora/nchlt_sot"
+    return build_path_to_transcript_dict_nchlt_template(root, lang_code="sot")
 
 
 def build_path_to_transcript_dict_nchlt_ssw():
-    root = '/resources/speech/corpora/nchlt_ssw'
-    return build_path_to_transcript_dict_nchlt_template(root, lang_code='ssw')
+    root = "/resources/speech/corpora/nchlt_ssw"
+    return build_path_to_transcript_dict_nchlt_template(root, lang_code="ssw")
 
 
 def build_path_to_transcript_dict_nchlt_tsn():
-    root = '/resources/speech/corpora/nchlt_tsn'
-    return build_path_to_transcript_dict_nchlt_template(root, lang_code='tsn')
+    root = "/resources/speech/corpora/nchlt_tsn"
+    return build_path_to_transcript_dict_nchlt_template(root, lang_code="tsn")
 
 
 def build_path_to_transcript_dict_nchlt_tso():
-    root = '/resources/speech/corpora/nchlt_tso'
-    return build_path_to_transcript_dict_nchlt_template(root, lang_code='tso')
+    root = "/resources/speech/corpora/nchlt_tso"
+    return build_path_to_transcript_dict_nchlt_template(root, lang_code="tso")
 
 
 def build_path_to_transcript_dict_nchlt_ven():
-    root = '/resources/speech/corpora/nchlt_ven'
-    return build_path_to_transcript_dict_nchlt_template(root, lang_code='ven')
+    root = "/resources/speech/corpora/nchlt_ven"
+    return build_path_to_transcript_dict_nchlt_template(root, lang_code="ven")
 
 
 def build_path_to_transcript_dict_nchlt_xho():
-    root = '/resources/speech/corpora/nchlt_xho'
-    return build_path_to_transcript_dict_nchlt_template(root, lang_code='xho')
+    root = "/resources/speech/corpora/nchlt_xho"
+    return build_path_to_transcript_dict_nchlt_template(root, lang_code="xho")
 
 
 def build_path_to_transcript_dict_nchlt_zul():
-    root = '/resources/speech/corpora/nchlt_zul'
-    return build_path_to_transcript_dict_nchlt_template(root, lang_code='zul')
+    root = "/resources/speech/corpora/nchlt_zul"
+    return build_path_to_transcript_dict_nchlt_template(root, lang_code="zul")
 
 
 def build_path_to_transcript_dict_nchlt_template(root, lang_code):
     path_to_transcript = dict()
     base_dir = Path(root).parent
 
-    for split in ['trn', 'tst']:
-        tree = ET.parse(f'{root}/transcriptions/nchlt_{lang_code}.{split}.xml')
+    for split in ["trn", "tst"]:
+        tree = ET.parse(f"{root}/transcriptions/nchlt_{lang_code}.{split}.xml")
         tree_root = tree.getroot()
-        for rec in tree_root.iter('recording'):
-            transcript = rec.find('orth').text
-            if '[s]' in transcript:
+        for rec in tree_root.iter("recording"):
+            transcript = rec.find("orth").text
+            if "[s]" in transcript:
                 continue
-            path = str(base_dir / rec.get('audio'))
+            path = str(base_dir / rec.get("audio"))
             path_to_transcript[path] = transcript
 
     return path_to_transcript
@@ -1007,98 +1206,116 @@ def build_path_to_transcript_dict_nchlt_template(root, lang_code):
 
 def build_path_to_transcript_dict_bibletts_akuapem_twi():
     path_to_transcript = dict()
-    root = '/resources/speech/corpora/BibleTTS/akuapem-twi'
-    for split in ['train', 'dev', 'test']:
-        for book in Path(root, split).glob('*'):
-            for textfile in book.glob('*.txt'):
-                with open(textfile, 'r', encoding='utf-8') as f:
-                    text = ' '.join([line.strip() for line in f])  # should usually be only one line anyway
-                path_to_transcript[textfile.with_suffix('.flac')] = text
+    root = "/resources/speech/corpora/BibleTTS/akuapem-twi"
+    for split in ["train", "dev", "test"]:
+        for book in Path(root, split).glob("*"):
+            for textfile in book.glob("*.txt"):
+                with open(textfile, "r", encoding="utf-8") as f:
+                    text = " ".join(
+                        [line.strip() for line in f]
+                    )  # should usually be only one line anyway
+                path_to_transcript[textfile.with_suffix(".flac")] = text
 
     return path_to_transcript
 
 
 def build_path_to_transcript_dict_bembaspeech():
-    root = '/resources/speech/corpora/BembaSpeech/bem'
+    root = "/resources/speech/corpora/BembaSpeech/bem"
     path_to_transcript = dict()
 
-    for split in ['train', 'dev', 'test']:
-        with open(Path(root, f'{split}.tsv'), 'r', encoding='utf-8') as f:
-            reader = DictReader(f, delimiter='\t')
+    for split in ["train", "dev", "test"]:
+        with open(Path(root, f"{split}.tsv"), "r", encoding="utf-8") as f:
+            reader = DictReader(f, delimiter="\t")
             for row in reader:
-                path_to_transcript[str(Path(root, 'audio', row['audio']))] = row['sentence']
+                path_to_transcript[str(Path(root, "audio", row["audio"]))] = row[
+                    "sentence"
+                ]
 
     return path_to_transcript
 
 
 def build_path_to_transcript_dict_alffa_sw():
-    root = '/resources/speech/corpora/ALFFA/data_broadcastnews_sw/data'
+    root = "/resources/speech/corpora/ALFFA/data_broadcastnews_sw/data"
 
-    path_to_transcript = build_path_to_transcript_dict_kaldi_template(root=root, split='train', replace_in_path=('asr_swahili/data/', ''))
-    path_to_transcript.update(build_path_to_transcript_dict_kaldi_template(root=root, split='test', replace_in_path=('/my_dir/wav', 'test/wav5')))
+    path_to_transcript = build_path_to_transcript_dict_kaldi_template(
+        root=root, split="train", replace_in_path=("asr_swahili/data/", "")
+    )
+    path_to_transcript.update(
+        build_path_to_transcript_dict_kaldi_template(
+            root=root, split="test", replace_in_path=("/my_dir/wav", "test/wav5")
+        )
+    )
     return path_to_transcript
 
 
 def build_path_to_transcript_dict_alffa_am():
-    root = '/resources/speech/corpora/ALFFA/data_readspeech_am/data'
+    root = "/resources/speech/corpora/ALFFA/data_readspeech_am/data"
 
-    path_to_transcript = build_path_to_transcript_dict_kaldi_template(root=root, split='train', replace_in_path=('/home/melese/kaldi/data/', ''))
-    path_to_transcript.update(build_path_to_transcript_dict_kaldi_template(root=root, split='test', replace_in_path=('/home/melese/kaldi/data/', '')))
+    path_to_transcript = build_path_to_transcript_dict_kaldi_template(
+        root=root, split="train", replace_in_path=("/home/melese/kaldi/data/", "")
+    )
+    path_to_transcript.update(
+        build_path_to_transcript_dict_kaldi_template(
+            root=root, split="test", replace_in_path=("/home/melese/kaldi/data/", "")
+        )
+    )
 
     return path_to_transcript
 
 
 def build_path_to_transcript_dict_alffa_wo():
-    root = '/resources/speech/corpora/ALFFA/data_readspeech_wo/data'
+    root = "/resources/speech/corpora/ALFFA/data_readspeech_wo/data"
     path_to_transcript = dict()
 
-    for split in ['train', 'dev', 'test']:
-        with open(Path(root, split, 'text'), 'r', encoding='utf-8') as f:
+    for split in ["train", "dev", "test"]:
+        with open(Path(root, split, "text"), "r", encoding="utf-8") as f:
             for line in f:
                 line = line.strip().split()
                 file = line[0]
-                text = ' '.join(line[1:])
-                number = file.split('_')[1]
-                path_to_transcript[str(Path(root, split, number, f'{file}.wav'))] = text
+                text = " ".join(line[1:])
+                number = file.split("_")[1]
+                path_to_transcript[str(Path(root, split, number, f"{file}.wav"))] = text
 
     return path_to_transcript
 
 
 def build_path_to_transcript_dict_malayalam():
-    root = '/resources/speech/corpora/malayalam'
+    root = "/resources/speech/corpora/malayalam"
     path_to_transcript = dict()
 
-    for gender in ['female', 'male']:
-        with open(Path(root, f'line_index_{gender}.tsv'), 'r', encoding='utf-8') as f:
+    for gender in ["female", "male"]:
+        with open(Path(root, f"line_index_{gender}.tsv"), "r", encoding="utf-8") as f:
             for line in f:
-                file, text = line.strip().split('\t')
-                path_to_transcript[str(Path(root, gender, f'{file}.wav'))] = text
+                file, text = line.strip().split("\t")
+                path_to_transcript[str(Path(root, gender, f"{file}.wav"))] = text
 
     return path_to_transcript
 
 
 def build_path_to_transcript_dict_msc():
-    root = '/resources/speech/corpora/msc_reviewed_speech'
+    root = "/resources/speech/corpora/msc_reviewed_speech"
     path_to_transcript = dict()
 
-    with open(Path(root, f'metadata.tsv'), 'r', encoding='utf-8') as f:
-        reader = DictReader(f, delimiter='\t')
+    with open(Path(root, f"metadata.tsv"), "r", encoding="utf-8") as f:
+        reader = DictReader(f, delimiter="\t")
         for row in reader:
-            path_to_transcript[str(Path(root, row['speechpath']))] = row['transcript']
+            path_to_transcript[str(Path(root, row["speechpath"]))] = row["transcript"]
 
     return path_to_transcript
 
 
 def build_path_to_transcript_dict_chuvash():
-    root = '/resources/speech/corpora/chuvash'
+    root = "/resources/speech/corpora/chuvash"
     path_to_transcript = dict()
 
-    for textfile in Path(root, 'transcripts', 'txt').glob('*.txt'):
-        with open(textfile, 'r', encoding='utf-8') as f:
+    for textfile in Path(root, "transcripts", "txt").glob("*.txt"):
+        with open(textfile, "r", encoding="utf-8") as f:
             for line in f:
                 line = line.strip().split()
-                text = ' '.join(line[1:]).replace('«', '').replace('»', '')
-                path = Path(root, 'audio', 'split', f'trim_clean_{textfile.stem}.{line[0]}.flac')
+                text = " ".join(line[1:]).replace("«", "").replace("»", "")
+                path = Path(
+                    root, "audio", "split", f"trim_clean_{textfile.stem}.{line[0]}.flac"
+                )
                 if path.exists():
                     path_to_transcript[str(path)] = text
 
@@ -1106,11 +1323,15 @@ def build_path_to_transcript_dict_chuvash():
 
 
 def build_path_to_transcript_dict_iban():
-    root = '/resources/speech/corpora/iban/data'
-    path_to_transcript = build_path_to_transcript_dict_kaldi_template(root, 'train', replace_in_path=(
-        'asr_iban/data/', ''))
-    path_to_transcript.update(build_path_to_transcript_dict_kaldi_template(root, 'dev', replace_in_path=(
-        'asr_iban/data/', '')))
+    root = "/resources/speech/corpora/iban/data"
+    path_to_transcript = build_path_to_transcript_dict_kaldi_template(
+        root, "train", replace_in_path=("asr_iban/data/", "")
+    )
+    path_to_transcript.update(
+        build_path_to_transcript_dict_kaldi_template(
+            root, "dev", replace_in_path=("asr_iban/data/", "")
+        )
+    )
     return path_to_transcript
 
 
@@ -1118,19 +1339,19 @@ def build_path_to_transcript_dict_kaldi_template(root, split, replace_in_path=No
     path_to_transcript = dict()
 
     wav_scp = {}
-    with open(Path(root, split, 'wav.scp'), 'r') as f:
+    with open(Path(root, split, "wav.scp"), "r") as f:
         for line in f:
             wav_id, wav_path = line.split()
             if replace_in_path:
                 wav_path = wav_path.replace(replace_in_path[0], replace_in_path[1])
             wav_scp[wav_id] = str(Path(root, wav_path))
 
-    with open(Path(root, split, 'text'), 'r', encoding='utf-8') as f:
+    with open(Path(root, split, "text"), "r", encoding="utf-8") as f:
         for line in f:
             line = line.split()
             wav_id = line[0]
-            text = ' '.join(line[1:])
-            if '<' in text:  # ignore all <UNK> utterance etc.
+            text = " ".join(line[1:])
+            if "<" in text:  # ignore all <UNK> utterance etc.
                 continue
             path_to_transcript[wav_scp[wav_id]] = text
 
@@ -1138,145 +1359,151 @@ def build_path_to_transcript_dict_kaldi_template(root, split, replace_in_path=No
 
 
 def build_path_to_transcript_dict_sundanese_speech():
-    root = '/resources/speech/corpora/sundanese_speech/asr_sundanese'
+    root = "/resources/speech/corpora/sundanese_speech/asr_sundanese"
     return build_path_to_transcript_dict_south_asian_languages_template(root)
 
 
 def build_path_to_transcript_dict_sinhala_speech():
-    root = '/resources/speech/corpora/sinhala_speech/asr_sinhala'
+    root = "/resources/speech/corpora/sinhala_speech/asr_sinhala"
     return build_path_to_transcript_dict_south_asian_languages_template(root)
 
 
 def build_path_to_transcript_dict_bengali_speech():
-    root = '/resources/speech/corpora/bengali_speech/asr_bengali'
+    root = "/resources/speech/corpora/bengali_speech/asr_bengali"
     return build_path_to_transcript_dict_south_asian_languages_template(root)
 
 
 def build_path_to_transcript_dict_nepali_speech():
-    root = '/resources/speech/corpora/nepali_speech/asr_nepali'
+    root = "/resources/speech/corpora/nepali_speech/asr_nepali"
     return build_path_to_transcript_dict_south_asian_languages_template(root)
 
 
 def build_path_to_transcript_dict_javanese_speech():
-    root = '/resources/speech/corpora/javanese_speech/asr_javanese'
+    root = "/resources/speech/corpora/javanese_speech/asr_javanese"
     return build_path_to_transcript_dict_south_asian_languages_template(root)
 
 
 def build_path_to_transcript_dict_south_asian_languages_template(root):
     path_to_transcript = dict()
 
-    with open(Path(root, 'utt_spk_text.tsv'), 'r', encoding='utf-8') as f:
+    with open(Path(root, "utt_spk_text.tsv"), "r", encoding="utf-8") as f:
         for line in f:
-            utt, spk, text = line.strip().split('\t')
+            utt, spk, text = line.strip().split("\t")
             dir_tag = utt[:2]
-            path_to_transcript[str(Path(root, 'data', dir_tag, f'{utt}.flac'))] = text
+            path_to_transcript[str(Path(root, "data", dir_tag, f"{utt}.flac"))] = text
 
     return path_to_transcript
 
 
 def build_path_to_transcript_dict_african_voices_kenyan_afv():
-    root = '/resources/speech/corpora/AfricanVoices/afv_enke'
+    root = "/resources/speech/corpora/AfricanVoices/afv_enke"
     return build_path_to_transcript_dict_african_voices_template(root)
 
 
 def build_path_to_transcript_dict_african_voices_fon_alf():
-    root = '/resources/speech/corpora/AfricanVoices/fon_alf'
+    root = "/resources/speech/corpora/AfricanVoices/fon_alf"
     return build_path_to_transcript_dict_african_voices_template(root)
 
 
 def build_path_to_transcript_dict_african_voices_hausa_cmv():
-    main_root = '/resources/speech/corpora/AfricanVoices'
-    path_to_transcript = build_path_to_transcript_dict_african_voices_template(f'{main_root}/hau_cmv_f')
-    path_to_transcript.update(build_path_to_transcript_dict_african_voices_template(f'{main_root}/hau_cmv_m'))
+    main_root = "/resources/speech/corpora/AfricanVoices"
+    path_to_transcript = build_path_to_transcript_dict_african_voices_template(
+        f"{main_root}/hau_cmv_f"
+    )
+    path_to_transcript.update(
+        build_path_to_transcript_dict_african_voices_template(f"{main_root}/hau_cmv_m")
+    )
     return path_to_transcript
 
 
 def build_path_to_transcript_dict_african_voices_ibibio_lst():
-    root = '/resources/speech/corpora/AfricanVoices/ibb_lst'
+    root = "/resources/speech/corpora/AfricanVoices/ibb_lst"
     return build_path_to_transcript_dict_african_voices_template(root)
 
 
 def build_path_to_transcript_dict_african_voices_kikuyu_opb():
-    root = '/resources/speech/corpora/AfricanVoices/kik_opb'
+    root = "/resources/speech/corpora/AfricanVoices/kik_opb"
     return build_path_to_transcript_dict_african_voices_template(root)
 
 
 def build_path_to_transcript_dict_african_voices_lingala_opb():
-    root = '/resources/speech/corpora/AfricanVoices/lin_opb'
+    root = "/resources/speech/corpora/AfricanVoices/lin_opb"
     return build_path_to_transcript_dict_african_voices_template(root)
 
 
 def build_path_to_transcript_dict_african_voices_ganda_cmv():
-    root = '/resources/speech/corpora/AfricanVoices/lug_cmv'
+    root = "/resources/speech/corpora/AfricanVoices/lug_cmv"
     return build_path_to_transcript_dict_african_voices_template(root)
 
 
 def build_path_to_transcript_dict_african_voices_luo_afv():
-    root = '/resources/speech/corpora/AfricanVoices/luo_afv'
+    root = "/resources/speech/corpora/AfricanVoices/luo_afv"
     return build_path_to_transcript_dict_african_voices_template(root)
 
 
 def build_path_to_transcript_dict_african_voices_luo_opb():
-    root = '/resources/speech/corpora/AfricanVoices/luo_opb'
+    root = "/resources/speech/corpora/AfricanVoices/luo_opb"
     return build_path_to_transcript_dict_african_voices_template(root)
 
 
 def build_path_to_transcript_dict_african_voices_swahili_llsti():
-    root = '/resources/speech/corpora/AfricanVoices/swa_llsti'
+    root = "/resources/speech/corpora/AfricanVoices/swa_llsti"
     return build_path_to_transcript_dict_african_voices_template(root)
 
 
 def build_path_to_transcript_dict_african_voices_suba_afv():
-    root = '/resources/speech/corpora/AfricanVoices/sxb_afv'
+    root = "/resources/speech/corpora/AfricanVoices/sxb_afv"
     return build_path_to_transcript_dict_african_voices_template(root)
 
 
 def build_path_to_transcript_dict_african_voices_wolof_alf():
-    root = '/resources/speech/corpora/AfricanVoices/wol_alf'
+    root = "/resources/speech/corpora/AfricanVoices/wol_alf"
     return build_path_to_transcript_dict_african_voices_template(root)
 
 
 def build_path_to_transcript_dict_african_voices_yoruba_opb():
-    root = '/resources/speech/corpora/AfricanVoices/yor_opb'
+    root = "/resources/speech/corpora/AfricanVoices/yor_opb"
     return build_path_to_transcript_dict_african_voices_template(root)
 
 
 def build_path_to_transcript_dict_african_voices_template(root):
     path_to_transcript = dict()
 
-    with open(Path(root, 'txt.done.data'), 'r', encoding='utf-8') as f:
+    with open(Path(root, "txt.done.data"), "r", encoding="utf-8") as f:
         for line in f:
             line = line.replace('\\"', "'").split('"')
             text = line[1]
             file = line[0].split()[-1]
-            path_to_transcript[str(Path(root, 'wav', f'{file}.wav'))] = text
+            path_to_transcript[str(Path(root, "wav", f"{file}.wav"))] = text
 
     return path_to_transcript
 
 
 def build_path_to_transcript_dict_zambezi_voice_nyanja():
-    root = '/resources/speech/corpora/ZambeziVoice/nyanja/nya'
+    root = "/resources/speech/corpora/ZambeziVoice/nyanja/nya"
     return build_path_to_transcript_dict_zambezi_voice_template(root)
 
 
 def build_path_to_transcript_dict_zambezi_voice_lozi():
-    root = '/resources/speech/corpora/ZambeziVoice/lozi/loz'
+    root = "/resources/speech/corpora/ZambeziVoice/lozi/loz"
     return build_path_to_transcript_dict_zambezi_voice_template(root)
 
 
 def build_path_to_transcript_dict_zambezi_voice_tonga():
-    root = '/resources/speech/corpora/ZambeziVoice/tonga/toi'
+    root = "/resources/speech/corpora/ZambeziVoice/tonga/toi"
     return build_path_to_transcript_dict_zambezi_voice_template(root)
 
 
 def build_path_to_transcript_dict_zambezi_voice_template(root):
     path_to_transcript = dict()
 
-    for split in ['train', 'dev', 'test']:
-        with open(Path(root, f'{split}.tsv'), 'r', encoding='utf-8') as f:
-            reader = DictReader(f, delimiter='\t')
+    for split in ["train", "dev", "test"]:
+        with open(Path(root, f"{split}.tsv"), "r", encoding="utf-8") as f:
+            reader = DictReader(f, delimiter="\t")
             for row in reader:
-                path_to_transcript[str(Path(root, 'audio', row['audio_id']))] = row['sentence'].strip()
+                path_to_transcript[str(Path(root, "audio", row["audio_id"]))] = row[
+                    "sentence"
+                ].strip()
 
     return path_to_transcript
 
@@ -1284,603 +1511,620 @@ def build_path_to_transcript_dict_zambezi_voice_template(root):
 def build_path_to_transcript_dict_fleurs_template(root):
     path_to_transcript = dict()
 
-    for split in ['train', 'dev', 'test']:
-        with open(Path(root, f'{split}.tsv'), 'r', encoding='utf-8') as f:
-            reader = DictReader(f, delimiter='\t', fieldnames=['id', 'filename', 'transcription_raw',
-                                                               'transcription', 'words', 'speaker', 'gender'])
+    for split in ["train", "dev", "test"]:
+        with open(Path(root, f"{split}.tsv"), "r", encoding="utf-8") as f:
+            reader = DictReader(
+                f,
+                delimiter="\t",
+                fieldnames=[
+                    "id",
+                    "filename",
+                    "transcription_raw",
+                    "transcription",
+                    "words",
+                    "speaker",
+                    "gender",
+                ],
+            )
             for row in reader:
-                path_to_transcript[str(Path(root, 'audio', split, row['filename']))] = row['transcription_raw'].strip()
+                path_to_transcript[str(Path(root, "audio", split, row["filename"]))] = (
+                    row["transcription_raw"].strip()
+                )
 
     return path_to_transcript
 
 
 def build_path_to_transcript_dict_fleurs_afrikaans():
-    root = '/resources/speech/corpora/fleurs/af_za'
+    root = "/resources/speech/corpora/fleurs/af_za"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_amharic():
-    root = '/resources/speech/corpora/fleurs/am_et'
+    root = "/resources/speech/corpora/fleurs/am_et"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_arabic():
-    root = '/resources/speech/corpora/fleurs/ar_eg'
+    root = "/resources/speech/corpora/fleurs/ar_eg"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_assamese():
-    root = '/resources/speech/corpora/fleurs/as_in'
+    root = "/resources/speech/corpora/fleurs/as_in"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_asturian():
-    root = '/resources/speech/corpora/fleurs/ast_es'
+    root = "/resources/speech/corpora/fleurs/ast_es"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_azerbaijani():
-    root = '/resources/speech/corpora/fleurs/az_az'
+    root = "/resources/speech/corpora/fleurs/az_az"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_belarusian():
-    root = '/resources/speech/corpora/fleurs/be_by'
+    root = "/resources/speech/corpora/fleurs/be_by"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_bulgarian():
-    root = '/resources/speech/corpora/fleurs/bg_bg'
+    root = "/resources/speech/corpora/fleurs/bg_bg"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_bengali():
-    root = '/resources/speech/corpora/fleurs/bn_in'
+    root = "/resources/speech/corpora/fleurs/bn_in"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_bosnian():
-    root = '/resources/speech/corpora/fleurs/bs_ba'
+    root = "/resources/speech/corpora/fleurs/bs_ba"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_catalan():
-    root = '/resources/speech/corpora/fleurs/ca_es'
+    root = "/resources/speech/corpora/fleurs/ca_es"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_cebuano():
-    root = '/resources/speech/corpora/fleurs/ceb_ph'
+    root = "/resources/speech/corpora/fleurs/ceb_ph"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_sorani_kurdish():
-    root = '/resources/speech/corpora/fleurs/ckb_iq'
+    root = "/resources/speech/corpora/fleurs/ckb_iq"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_mandarin():
-    root = '/resources/speech/corpora/fleurs/cmn_hans_cn'
+    root = "/resources/speech/corpora/fleurs/cmn_hans_cn"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_czech():
-    root = '/resources/speech/corpora/fleurs/cs_cz'
+    root = "/resources/speech/corpora/fleurs/cs_cz"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_welsh():
-    root = '/resources/speech/corpora/fleurs/cy_gb'
+    root = "/resources/speech/corpora/fleurs/cy_gb"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_danish():
-    root = '/resources/speech/corpora/fleurs/da_dk'
+    root = "/resources/speech/corpora/fleurs/da_dk"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_german():
-    root = '/resources/speech/corpora/fleurs/de_de'
+    root = "/resources/speech/corpora/fleurs/de_de"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_greek():
-    root = '/resources/speech/corpora/fleurs/el_gr'
+    root = "/resources/speech/corpora/fleurs/el_gr"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_english():
-    root = '/resources/speech/corpora/fleurs/en_us'
+    root = "/resources/speech/corpora/fleurs/en_us"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_spanish():
-    root = '/resources/speech/corpora/fleurs/es_419'
+    root = "/resources/speech/corpora/fleurs/es_419"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_estonian():
-    root = '/resources/speech/corpora/fleurs/et_ee'
+    root = "/resources/speech/corpora/fleurs/et_ee"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_persian():
-    root = '/resources/speech/corpora/fleurs/fa_ir'
+    root = "/resources/speech/corpora/fleurs/fa_ir"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_fula():
-    root = '/resources/speech/corpora/fleurs/ff_sn'
+    root = "/resources/speech/corpora/fleurs/ff_sn"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_finnish():
-    root = '/resources/speech/corpora/fleurs/fi_fi'
+    root = "/resources/speech/corpora/fleurs/fi_fi"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_filipino():
-    root = '/resources/speech/corpora/fleurs/fil_ph'
+    root = "/resources/speech/corpora/fleurs/fil_ph"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_french():
-    root = '/resources/speech/corpora/fleurs/fr_fr'
+    root = "/resources/speech/corpora/fleurs/fr_fr"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_irish():
-    root = '/resources/speech/corpora/fleurs/ga_ie'
+    root = "/resources/speech/corpora/fleurs/ga_ie"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_galician():
-    root = '/resources/speech/corpora/fleurs/gl_es'
+    root = "/resources/speech/corpora/fleurs/gl_es"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_gujarati():
-    root = '/resources/speech/corpora/fleurs/gu_in'
+    root = "/resources/speech/corpora/fleurs/gu_in"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_hausa():
-    root = '/resources/speech/corpora/fleurs/ha_ng'
+    root = "/resources/speech/corpora/fleurs/ha_ng"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_hebrew():
-    root = '/resources/speech/corpora/fleurs/he_il'
+    root = "/resources/speech/corpora/fleurs/he_il"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_hindi():
-    root = '/resources/speech/corpora/fleurs/hi_in'
+    root = "/resources/speech/corpora/fleurs/hi_in"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_croatian():
-    root = '/resources/speech/corpora/fleurs/hr_hr'
+    root = "/resources/speech/corpora/fleurs/hr_hr"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_hungarian():
-    root = '/resources/speech/corpora/fleurs/hu_hu'
+    root = "/resources/speech/corpora/fleurs/hu_hu"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_armenian():
-    root = '/resources/speech/corpora/fleurs/hy_am'
+    root = "/resources/speech/corpora/fleurs/hy_am"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_indonesian():
-    root = '/resources/speech/corpora/fleurs/id_id'
+    root = "/resources/speech/corpora/fleurs/id_id"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_igbo():
-    root = '/resources/speech/corpora/fleurs/ig_ng'
+    root = "/resources/speech/corpora/fleurs/ig_ng"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_icelandic():
-    root = '/resources/speech/corpora/fleurs/is_is'
+    root = "/resources/speech/corpora/fleurs/is_is"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_italian():
-    root = '/resources/speech/corpora/fleurs/it_it'
+    root = "/resources/speech/corpora/fleurs/it_it"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_japanese():
-    root = '/resources/speech/corpora/fleurs/ja_jp'
+    root = "/resources/speech/corpora/fleurs/ja_jp"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_javanese():
-    root = '/resources/speech/corpora/fleurs/jv_id'
+    root = "/resources/speech/corpora/fleurs/jv_id"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_georgian():
-    root = '/resources/speech/corpora/fleurs/ka_ge'
+    root = "/resources/speech/corpora/fleurs/ka_ge"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_kamba():
-    root = '/resources/speech/corpora/fleurs/kam_ke'
+    root = "/resources/speech/corpora/fleurs/kam_ke"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_kabuverdianu():
-    root = '/resources/speech/corpora/fleurs/kea_cv'
+    root = "/resources/speech/corpora/fleurs/kea_cv"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_kazakh():
-    root = '/resources/speech/corpora/fleurs/kk_kz'
+    root = "/resources/speech/corpora/fleurs/kk_kz"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_khmer():
-    root = '/resources/speech/corpora/fleurs/km_kh'
+    root = "/resources/speech/corpora/fleurs/km_kh"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_kannada():
-    root = '/resources/speech/corpora/fleurs/kn_in'
+    root = "/resources/speech/corpora/fleurs/kn_in"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_korean():
-    root = '/resources/speech/corpora/fleurs/ko_kr'
+    root = "/resources/speech/corpora/fleurs/ko_kr"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_kyrgyz():
-    root = '/resources/speech/corpora/fleurs/ky_kg'
+    root = "/resources/speech/corpora/fleurs/ky_kg"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_luxembourgish():
-    root = '/resources/speech/corpora/fleurs/lb_lu'
+    root = "/resources/speech/corpora/fleurs/lb_lu"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_ganda():
-    root = '/resources/speech/corpora/fleurs/lg_ug'
+    root = "/resources/speech/corpora/fleurs/lg_ug"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_lingala():
-    root = '/resources/speech/corpora/fleurs/ln_cd'
+    root = "/resources/speech/corpora/fleurs/ln_cd"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_lao():
-    root = '/resources/speech/corpora/fleurs/lo_la'
+    root = "/resources/speech/corpora/fleurs/lo_la"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_lithuanian():
-    root = '/resources/speech/corpora/fleurs/lt_lt'
+    root = "/resources/speech/corpora/fleurs/lt_lt"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_luo():
-    root = '/resources/speech/corpora/fleurs/luo_ke'
+    root = "/resources/speech/corpora/fleurs/luo_ke"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_latvian():
-    root = '/resources/speech/corpora/fleurs/lv_lv'
+    root = "/resources/speech/corpora/fleurs/lv_lv"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_maori():
-    root = '/resources/speech/corpora/fleurs/mi_nz'
+    root = "/resources/speech/corpora/fleurs/mi_nz"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_macedonian():
-    root = '/resources/speech/corpora/fleurs/mk_mk'
+    root = "/resources/speech/corpora/fleurs/mk_mk"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_malayalam():
-    root = '/resources/speech/corpora/fleurs/ml_in'
+    root = "/resources/speech/corpora/fleurs/ml_in"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_mongolian():
-    root = '/resources/speech/corpora/fleurs/mn_mn'
+    root = "/resources/speech/corpora/fleurs/mn_mn"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_marathi():
-    root = '/resources/speech/corpora/fleurs/mr_in'
+    root = "/resources/speech/corpora/fleurs/mr_in"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_malay():
-    root = '/resources/speech/corpora/fleurs/ms_my'
+    root = "/resources/speech/corpora/fleurs/ms_my"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_maltese():
-    root = '/resources/speech/corpora/fleurs/mt_mt'
+    root = "/resources/speech/corpora/fleurs/mt_mt"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_burmese():
-    root = '/resources/speech/corpora/fleurs/my_mm'
+    root = "/resources/speech/corpora/fleurs/my_mm"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_norwegian():
-    root = '/resources/speech/corpora/fleurs/nb_no'
+    root = "/resources/speech/corpora/fleurs/nb_no"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_nepali():
-    root = '/resources/speech/corpora/fleurs/ne_np'
+    root = "/resources/speech/corpora/fleurs/ne_np"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_dutch():
-    root = '/resources/speech/corpora/fleurs/nl_nl'
+    root = "/resources/speech/corpora/fleurs/nl_nl"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_northern_sotho():
-    root = '/resources/speech/corpora/fleurs/nso_za'
+    root = "/resources/speech/corpora/fleurs/nso_za"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_nyanja():
-    root = '/resources/speech/corpora/fleurs/ny_mw'
+    root = "/resources/speech/corpora/fleurs/ny_mw"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_occitan():
-    root = '/resources/speech/corpora/fleurs/oc_fr'
+    root = "/resources/speech/corpora/fleurs/oc_fr"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_oroma():
-    root = '/resources/speech/corpora/fleurs/om_et'
+    root = "/resources/speech/corpora/fleurs/om_et"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_oriya():
-    root = '/resources/speech/corpora/fleurs/or_in'
+    root = "/resources/speech/corpora/fleurs/or_in"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_punjabi():
-    root = '/resources/speech/corpora/fleurs/pa_in'
+    root = "/resources/speech/corpora/fleurs/pa_in"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_polish():
-    root = '/resources/speech/corpora/fleurs/pl_pl'
+    root = "/resources/speech/corpora/fleurs/pl_pl"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_pashto():
-    root = '/resources/speech/corpora/fleurs/ps_af'
+    root = "/resources/speech/corpora/fleurs/ps_af"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_portuguese():
-    root = '/resources/speech/corpora/fleurs/pt_br'
+    root = "/resources/speech/corpora/fleurs/pt_br"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_romanian():
-    root = '/resources/speech/corpora/fleurs/ro_ro'
+    root = "/resources/speech/corpora/fleurs/ro_ro"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_russian():
-    root = '/resources/speech/corpora/fleurs/ru_ru'
+    root = "/resources/speech/corpora/fleurs/ru_ru"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_sindhi():
-    root = '/resources/speech/corpora/fleurs/sd_in'
+    root = "/resources/speech/corpora/fleurs/sd_in"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_slovak():
-    root = '/resources/speech/corpora/fleurs/sk_sk'
+    root = "/resources/speech/corpora/fleurs/sk_sk"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_slovenian():
-    root = '/resources/speech/corpora/fleurs/sl_si'
+    root = "/resources/speech/corpora/fleurs/sl_si"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_shona():
-    root = '/resources/speech/corpora/fleurs/sn_zw'
+    root = "/resources/speech/corpora/fleurs/sn_zw"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_somali():
-    root = '/resources/speech/corpora/fleurs/so_so'
+    root = "/resources/speech/corpora/fleurs/so_so"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_serbian():
-    root = '/resources/speech/corpora/fleurs/sr_rs'
+    root = "/resources/speech/corpora/fleurs/sr_rs"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_swedish():
-    root = '/resources/speech/corpora/fleurs/sv_se'
+    root = "/resources/speech/corpora/fleurs/sv_se"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_swahili():
-    root = '/resources/speech/corpora/fleurs/sw_ke'
+    root = "/resources/speech/corpora/fleurs/sw_ke"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_tamil():
-    root = '/resources/speech/corpora/fleurs/ta_in'
+    root = "/resources/speech/corpora/fleurs/ta_in"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_telugu():
-    root = '/resources/speech/corpora/fleurs/te_in'
+    root = "/resources/speech/corpora/fleurs/te_in"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_tajik():
-    root = '/resources/speech/corpora/fleurs/tg_tj'
+    root = "/resources/speech/corpora/fleurs/tg_tj"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_thai():
-    root = '/resources/speech/corpora/fleurs/th_th'
+    root = "/resources/speech/corpora/fleurs/th_th"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_turkish():
-    root = '/resources/speech/corpora/fleurs/tr_tr'
+    root = "/resources/speech/corpora/fleurs/tr_tr"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_ukrainian():
-    root = '/resources/speech/corpora/fleurs/uk_ua'
+    root = "/resources/speech/corpora/fleurs/uk_ua"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_umbundu():
-    root = '/resources/speech/corpora/fleurs/umb_ao'
+    root = "/resources/speech/corpora/fleurs/umb_ao"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_urdu():
-    root = '/resources/speech/corpora/fleurs/ur_pk'
+    root = "/resources/speech/corpora/fleurs/ur_pk"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_uzbek():
-    root = '/resources/speech/corpora/fleurs/uz_uz'
+    root = "/resources/speech/corpora/fleurs/uz_uz"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_vietnamese():
-    root = '/resources/speech/corpora/fleurs/vi_vn'
+    root = "/resources/speech/corpora/fleurs/vi_vn"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_wolof():
-    root = '/resources/speech/corpora/fleurs/wo_sn'
+    root = "/resources/speech/corpora/fleurs/wo_sn"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_xhosa():
-    root = '/resources/speech/corpora/fleurs/xh_za'
+    root = "/resources/speech/corpora/fleurs/xh_za"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_yoruba():
-    root = '/resources/speech/corpora/fleurs/yo_ng'
+    root = "/resources/speech/corpora/fleurs/yo_ng"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_cantonese():
-    root = '/resources/speech/corpora/fleurs/yue_hant_hk'
+    root = "/resources/speech/corpora/fleurs/yue_hant_hk"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_fleurs_zulu():
-    root = '/resources/speech/corpora/fleurs/zu_za'
+    root = "/resources/speech/corpora/fleurs/zu_za"
     return build_path_to_transcript_dict_fleurs_template(root)
 
 
 def build_path_to_transcript_dict_living_audio_dataset_template(root):
     path_to_transcript = dict()
-    tree = ET.parse(f'{root}/text.xml')
+    tree = ET.parse(f"{root}/text.xml")
     tree_root = tree.getroot()
 
-    for rec in tree_root.iter('recording_script'):
-        for file in rec.iter('fileid'):
-            path_to_transcript[str(Path(root, '48000_orig', f'{file.get("id")}.wav'))] = file.text.strip()
+    for rec in tree_root.iter("recording_script"):
+        for file in rec.iter("fileid"):
+            path_to_transcript[
+                str(Path(root, "48000_orig", f'{file.get("id")}.wav'))
+            ] = file.text.strip()
 
     return path_to_transcript
 
 
 def build_path_to_transcript_dict_living_audio_dataset_irish():
-    root = '/resources/speech/corpora/LivingAudioDataset/ga'
+    root = "/resources/speech/corpora/LivingAudioDataset/ga"
     return build_path_to_transcript_dict_living_audio_dataset_template(root)
 
 
 def build_path_to_transcript_dict_living_audio_dataset_dutch():
-    root = '/resources/speech/corpora/LivingAudioDataset/nl'
+    root = "/resources/speech/corpora/LivingAudioDataset/nl"
     return build_path_to_transcript_dict_living_audio_dataset_template(root)
 
 
 def build_path_to_transcript_dict_living_audio_dataset_russian():
-    root = '/resources/speech/corpora/LivingAudioDataset/ru'
+    root = "/resources/speech/corpora/LivingAudioDataset/ru"
     return build_path_to_transcript_dict_living_audio_dataset_template(root)
 
 
 def build_path_to_transcript_dict_romanian_db():
-    root = '/resources/speech/corpora/RomanianDB'
+    root = "/resources/speech/corpora/RomanianDB"
     path_to_transcript = dict()
 
-    for split in ['training', 'testing', 'elena', 'georgiana']:
-        for transcript in Path(root, split, 'text').glob('*.txt'):
+    for split in ["training", "testing", "elena", "georgiana"]:
+        for transcript in Path(root, split, "text").glob("*.txt"):
             subset = transcript.stem
-            with open(transcript, 'r', encoding='utf-8') as f:
+            with open(transcript, "r", encoding="utf-8") as f:
                 for line in f:
                     fileid = line.strip()[:2]
                     if len(fileid) == 2:
-                        fileid = '0' + fileid
+                        fileid = "0" + fileid
                     text = line.strip()[5:]
-                    if split == 'elena':
-                        path = f'ele_{subset}_{fileid}.wav'
-                    elif split == 'georgiana':
-                        path = f'geo_{subset}_{fileid}.wav'
+                    if split == "elena":
+                        path = f"ele_{subset}_{fileid}.wav"
+                    elif split == "georgiana":
+                        path = f"geo_{subset}_{fileid}.wav"
                     else:
-                        path = f'adr_{subset}_{fileid}.wav'
-                    path_to_transcript[str(Path(root, split, 'wav', subset, path))] = text
+                        path = f"adr_{subset}_{fileid}.wav"
+                    path_to_transcript[str(Path(root, split, "wav", subset, path))] = (
+                        text
+                    )
 
     return path_to_transcript
 
 
 def build_path_to_transcript_dict_shemo():
-    root = '/resources/speech/corpora/ShEMO'
+    root = "/resources/speech/corpora/ShEMO"
     path_to_transcript = dict()
 
-    with open('/resources/speech/corpora/ShEMO/shemo.json', 'r', encoding='utf-8') as f:
+    with open("/resources/speech/corpora/ShEMO/shemo.json", "r", encoding="utf-8") as f:
         data = json.load(f)
 
     for fileid, file_info in data.items():
-        path = Path(root, file_info['gender'], f'{fileid}.wav')
+        path = Path(root, file_info["gender"], f"{fileid}.wav")
         if path.exists():
-            path_to_transcript[str(path)] = file_info['transcript']
+            path_to_transcript[str(path)] = file_info["transcript"]
 
     return path_to_transcript
 
 
-def build_path_to_transcript_dict_mslt_template(root, lang='en'):
+def build_path_to_transcript_dict_mslt_template(root, lang="en"):
     path_to_transcript = dict()
 
-    for split in Path(root).glob('*'):
+    for split in Path(root).glob("*"):
         if split.is_dir():
-            for audio_file in split.glob('*.wav'):
-                text_file = str(audio_file).replace(f'T0.{lang}.wav', f'T1.{lang}.snt')
-                with open(text_file, 'r', encoding='utf-16') as f:
+            for audio_file in split.glob("*.wav"):
+                text_file = str(audio_file).replace(f"T0.{lang}.wav", f"T1.{lang}.snt")
+                with open(text_file, "r", encoding="utf-16") as f:
                     for line in f:
                         text = line.strip()  # should have only one line
-                        if '<' in text or '[' in text:
+                        if "<" in text or "[" in text:
                             # ignore all utterances with special parts like [laughter] or <UNIN/>
                             continue
                         path_to_transcript[str(audio_file)] = text
@@ -1890,26 +2134,26 @@ def build_path_to_transcript_dict_mslt_template(root, lang='en'):
 
 
 def build_path_to_transcript_dict_mslt_english():
-    root = '/resources/speech/corpora/MSLT/Data/EN'
-    return build_path_to_transcript_dict_mslt_template(root, lang='en')
+    root = "/resources/speech/corpora/MSLT/Data/EN"
+    return build_path_to_transcript_dict_mslt_template(root, lang="en")
 
 
 def build_path_to_transcript_dict_mslt_japanese():
-    root = '/resources/speech/corpora/MSLT/Data/JA'
-    return build_path_to_transcript_dict_mslt_template(root, lang='jp')
+    root = "/resources/speech/corpora/MSLT/Data/JA"
+    return build_path_to_transcript_dict_mslt_template(root, lang="jp")
 
 
 def build_path_to_transcript_dict_mslt_chinese():
-    root = '/resources/speech/corpora/MSLT/Data/ZH'
-    return build_path_to_transcript_dict_mslt_template(root, lang='ch')
+    root = "/resources/speech/corpora/MSLT/Data/ZH"
+    return build_path_to_transcript_dict_mslt_template(root, lang="ch")
 
 
 def build_path_to_transcript_dict_rajasthani_hindi_speech():
-    root = '/resources/speech/corpora/Rajasthani_Hindi_Speech/Hindi-Speech-Data'
+    root = "/resources/speech/corpora/Rajasthani_Hindi_Speech/Hindi-Speech-Data"
     path_to_transcript = dict()
 
-    for audio_file in Path(root).glob('*.3gp'):
-        with open(audio_file.with_suffix('.txt'), 'r', encoding='utf-8') as f:
+    for audio_file in Path(root).glob("*.3gp"):
+        with open(audio_file.with_suffix(".txt"), "r", encoding="utf-8") as f:
             for line in f:  # should only be one line
                 text = line.strip()
         path_to_transcript[str(audio_file)] = text
@@ -1918,46 +2162,56 @@ def build_path_to_transcript_dict_rajasthani_hindi_speech():
 
 
 def build_path_to_transcript_dict_cmu_arctic():
-    root = '/resources/speech/corpora/cmu_arctic'
+    root = "/resources/speech/corpora/cmu_arctic"
     path_to_transcript = dict()
 
-    for speaker_dir in Path(root).glob('*'):
+    for speaker_dir in Path(root).glob("*"):
         if speaker_dir.is_dir():
-            with open(Path(speaker_dir, 'etc', 'txt.done.data'), 'r', encoding='utf-8') as f:
+            with open(
+                Path(speaker_dir, "etc", "txt.done.data"), "r", encoding="utf-8"
+            ) as f:
                 for line in f:
                     line = line.replace('\\"', "'").split('"')
                     text = line[1]
                     file = line[0].split()[-1]
-                    path_to_transcript[str(Path(speaker_dir, 'wav', f'{file}.wav'))] = text
+                    path_to_transcript[str(Path(speaker_dir, "wav", f"{file}.wav"))] = (
+                        text
+                    )
 
     return path_to_transcript
 
 
 def build_path_to_transcript_dict_sevil_tatar():
-    root = '/resources/speech/corpora/sevil_tatar/sevil'
+    root = "/resources/speech/corpora/sevil_tatar/sevil"
     path_to_transcript = dict()
 
-    with open(Path(root, 'metadata.jsonl'), 'r', encoding='utf-8') as f:
+    with open(Path(root, "metadata.jsonl"), "r", encoding="utf-8") as f:
         for line in f:
             meta = json.loads(line)
-            path_to_transcript[str(Path(root, meta['file']))] = meta['orig_text'].strip().replace('\xad', '')
+            path_to_transcript[str(Path(root, meta["file"]))] = (
+                meta["orig_text"].strip().replace("\xad", "")
+            )
 
     return path_to_transcript
 
 
 def build_path_to_transcript_dict_clartts():
-    root = '/resources/speech/corpora/ClArTTS'
+    root = "/resources/speech/corpora/ClArTTS"
     path_to_transcript = dict()
 
-    with open(Path(root, 'training.txt'), 'r', encoding='utf-16') as f:
+    with open(Path(root, "training.txt"), "r", encoding="utf-16") as f:
         for line in f:
-            fileid, transcript = line.strip().split('|')
-            path_to_transcript[str(Path(root, 'wav', 'train', f'{fileid}.wav'))] = transcript
+            fileid, transcript = line.strip().split("|")
+            path_to_transcript[str(Path(root, "wav", "train", f"{fileid}.wav"))] = (
+                transcript
+            )
 
-    with open(Path(root, 'validation.txt'), 'r', encoding='utf-16') as f:
+    with open(Path(root, "validation.txt"), "r", encoding="utf-16") as f:
         for line in f:
-            fileid, transcript = line.strip().split('|')
-            path_to_transcript[str(Path(root, 'wav', 'val', f'{fileid}.wav'))] = transcript
+            fileid, transcript = line.strip().split("|")
+            path_to_transcript[str(Path(root, "wav", "val", f"{fileid}.wav"))] = (
+                transcript
+            )
 
     return path_to_transcript
 
@@ -1965,114 +2219,118 @@ def build_path_to_transcript_dict_clartts():
 def build_path_to_transcript_dict_snow_mountain_template(root, lang):
     path_to_transcript = dict()
 
-    for split in ['train_full', 'val_full', 'test_common']:
-        with open(Path(root, 'experiments', lang, f'{split}.csv'), 'r', encoding='utf-8') as f:
-            reader = DictReader(f, delimiter=',')
+    for split in ["train_full", "val_full", "test_common"]:
+        with open(
+            Path(root, "experiments", lang, f"{split}.csv"), "r", encoding="utf-8"
+        ) as f:
+            reader = DictReader(f, delimiter=",")
             for row in reader:
-                path = row['path'].replace('data/', f'{root}/')
-                path_to_transcript[path] = row['sentence'].strip()
+                path = row["path"].replace("data/", f"{root}/")
+                path_to_transcript[path] = row["sentence"].strip()
 
     return path_to_transcript
 
 
 def build_path_to_transcript_dict_snow_mountain_bhadrawahi():
-    root = '/resources/speech/corpora/snow_mountain'
-    language = 'bhadrawahi'
+    root = "/resources/speech/corpora/snow_mountain"
+    language = "bhadrawahi"
     return build_path_to_transcript_dict_snow_mountain_template(root, language)
 
 
 def build_path_to_transcript_dict_snow_mountain_bilaspuri():
-    root = '/resources/speech/corpora/snow_mountain'
-    language = 'bilaspuri'
+    root = "/resources/speech/corpora/snow_mountain"
+    language = "bilaspuri"
     return build_path_to_transcript_dict_snow_mountain_template(root, language)
 
 
 def build_path_to_transcript_dict_snow_mountain_dogri():
-    root = '/resources/speech/corpora/snow_mountain'
-    language = 'dogri'
+    root = "/resources/speech/corpora/snow_mountain"
+    language = "dogri"
     return build_path_to_transcript_dict_snow_mountain_template(root, language)
 
 
 def build_path_to_transcript_dict_snow_mountain_gaddi():
-    root = '/resources/speech/corpora/snow_mountain'
-    language = 'gaddi'
+    root = "/resources/speech/corpora/snow_mountain"
+    language = "gaddi"
     return build_path_to_transcript_dict_snow_mountain_template(root, language)
 
 
 def build_path_to_transcript_dict_snow_mountain_haryanvi():
-    root = '/resources/speech/corpora/snow_mountain'
-    language = 'haryanvi'
+    root = "/resources/speech/corpora/snow_mountain"
+    language = "haryanvi"
     return build_path_to_transcript_dict_snow_mountain_template(root, language)
 
 
 def build_path_to_transcript_dict_snow_mountain_hindi():
-    root = '/resources/speech/corpora/snow_mountain'
-    language = 'hindi'
+    root = "/resources/speech/corpora/snow_mountain"
+    language = "hindi"
     return build_path_to_transcript_dict_snow_mountain_template(root, language)
 
 
 def build_path_to_transcript_dict_snow_mountain_kangri():
-    root = '/resources/speech/corpora/snow_mountain'
-    language = 'kangri'
+    root = "/resources/speech/corpora/snow_mountain"
+    language = "kangri"
     return build_path_to_transcript_dict_snow_mountain_template(root, language)
 
 
 def build_path_to_transcript_dict_snow_mountain_kannada():
-    root = '/resources/speech/corpora/snow_mountain'
-    language = 'kannada'
+    root = "/resources/speech/corpora/snow_mountain"
+    language = "kannada"
     return build_path_to_transcript_dict_snow_mountain_template(root, language)
 
 
 def build_path_to_transcript_dict_snow_mountain_kulvi():
-    root = '/resources/speech/corpora/snow_mountain'
-    language = 'kulvi'
+    root = "/resources/speech/corpora/snow_mountain"
+    language = "kulvi"
     return build_path_to_transcript_dict_snow_mountain_template(root, language)
 
 
 def build_path_to_transcript_dict_snow_mountain_kulvi_outer_seraji():
-    root = '/resources/speech/corpora/snow_mountain'
-    language = 'kulvi_outer_seraji'
+    root = "/resources/speech/corpora/snow_mountain"
+    language = "kulvi_outer_seraji"
     return build_path_to_transcript_dict_snow_mountain_template(root, language)
 
 
 def build_path_to_transcript_dict_snow_mountain_malayalam():
-    root = '/resources/speech/corpora/snow_mountain'
-    language = 'malayalam'
+    root = "/resources/speech/corpora/snow_mountain"
+    language = "malayalam"
     return build_path_to_transcript_dict_snow_mountain_template(root, language)
 
 
 def build_path_to_transcript_dict_snow_mountain_mandeali():
-    root = '/resources/speech/corpora/snow_mountain'
-    language = 'mandeali'
+    root = "/resources/speech/corpora/snow_mountain"
+    language = "mandeali"
     return build_path_to_transcript_dict_snow_mountain_template(root, language)
 
 
 def build_path_to_transcript_dict_snow_mountain_pahari_mahasui():
-    root = '/resources/speech/corpora/snow_mountain'
-    language = 'pahari_mahasui'
+    root = "/resources/speech/corpora/snow_mountain"
+    language = "pahari_mahasui"
     return build_path_to_transcript_dict_snow_mountain_template(root, language)
 
 
 def build_path_to_transcript_dict_snow_mountain_tamil():
-    root = '/resources/speech/corpora/snow_mountain'
-    language = 'tamil'
+    root = "/resources/speech/corpora/snow_mountain"
+    language = "tamil"
     return build_path_to_transcript_dict_snow_mountain_template(root, language)
 
 
 def build_path_to_transcript_dict_snow_mountain_telugu():
-    root = '/resources/speech/corpora/snow_mountain'
-    language = 'telugu'
+    root = "/resources/speech/corpora/snow_mountain"
+    language = "telugu"
     return build_path_to_transcript_dict_snow_mountain_template(root, language)
 
 
 def build_path_to_transcript_dict_ukrainian_lada():
-    root = '/resources/speech/corpora/ukrainian_lada/dataset_lada/accept'
+    root = "/resources/speech/corpora/ukrainian_lada/dataset_lada/accept"
     path_to_transcript = dict()
 
-    with open(Path(root, 'metadata.jsonl'), 'r', encoding='utf-8') as f:
+    with open(Path(root, "metadata.jsonl"), "r", encoding="utf-8") as f:
         for line in f:
             meta = json.loads(line)
-            path_to_transcript[str(Path(root, meta['file']).with_suffix('.wav'))] = meta['orig_text'].strip().replace('\xad', '')
+            path_to_transcript[str(Path(root, meta["file"]).with_suffix(".wav"))] = (
+                meta["orig_text"].strip().replace("\xad", "")
+            )
 
     return path_to_transcript
 
@@ -2080,28 +2338,32 @@ def build_path_to_transcript_dict_ukrainian_lada():
 def build_path_to_transcript_dict_m_ailabs_template(root):
     path_to_transcript = dict()
 
-    for gender_dir in Path(root).glob('*'):
+    for gender_dir in Path(root).glob("*"):
         if not gender_dir.is_dir():
             continue
-        for speaker_dir in gender_dir.glob('*'):
+        for speaker_dir in gender_dir.glob("*"):
             if not speaker_dir.is_dir():
                 continue
-            if (speaker_dir / 'wavs').exists():
-                with open(Path(speaker_dir, 'metadata.csv'), 'r', encoding='utf-8') as f:
+            if (speaker_dir / "wavs").exists():
+                with open(
+                    Path(speaker_dir, "metadata.csv"), "r", encoding="utf-8"
+                ) as f:
                     for line in f:
-                        fileid, text, text_norm = line.strip().split('|')
-                        path = Path(speaker_dir, 'wavs', f'{fileid}.wav')
+                        fileid, text, text_norm = line.strip().split("|")
+                        path = Path(speaker_dir, "wavs", f"{fileid}.wav")
                         if path.exists():
                             path_to_transcript[str(path)] = text_norm
             else:
 
-                for session_dir in speaker_dir.glob('*'):
+                for session_dir in speaker_dir.glob("*"):
                     if not session_dir.is_dir():
                         continue
-                    with open(Path(session_dir, 'metadata.csv'), 'r', encoding='utf-8') as f:
+                    with open(
+                        Path(session_dir, "metadata.csv"), "r", encoding="utf-8"
+                    ) as f:
                         for line in f:
-                            fileid, text, text_norm = line.strip().split('|')
-                            path = Path(session_dir, 'wavs', f'{fileid}.wav')
+                            fileid, text, text_norm = line.strip().split("|")
+                            path = Path(session_dir, "wavs", f"{fileid}.wav")
                             if path.exists():
                                 path_to_transcript[str(path)] = text_norm
 
@@ -2109,104 +2371,108 @@ def build_path_to_transcript_dict_m_ailabs_template(root):
 
 
 def build_path_to_transcript_dict_m_ailabs_german():
-    root = '/resources/speech/corpora/m-ailabs-speech/de_DE'
+    root = "/resources/speech/corpora/m-ailabs-speech/de_DE"
     return build_path_to_transcript_dict_m_ailabs_template(root)
 
 
 def build_path_to_transcript_dict_m_ailabs_uk_english():
-    root = '/resources/speech/corpora/m-ailabs-speech/en_UK'
+    root = "/resources/speech/corpora/m-ailabs-speech/en_UK"
     return build_path_to_transcript_dict_m_ailabs_template(root)
 
 
 def build_path_to_transcript_dict_m_ailabs_us_english():
-    root = '/resources/speech/corpora/m-ailabs-speech/en_US'
+    root = "/resources/speech/corpora/m-ailabs-speech/en_US"
     return build_path_to_transcript_dict_m_ailabs_template(root)
 
 
 def build_path_to_transcript_dict_m_ailabs_spanish():
-    root = '/resources/speech/corpora/m-ailabs-speech/es_ES'
+    root = "/resources/speech/corpora/m-ailabs-speech/es_ES"
     return build_path_to_transcript_dict_m_ailabs_template(root)
 
 
 def build_path_to_transcript_dict_m_ailabs_french():
-    root = '/resources/speech/corpora/m-ailabs-speech/fr_FR'
+    root = "/resources/speech/corpora/m-ailabs-speech/fr_FR"
     return build_path_to_transcript_dict_m_ailabs_template(root)
 
 
 def build_path_to_transcript_dict_m_ailabs_italian():
-    root = '/resources/speech/corpora/m-ailabs-speech/it_IT'
+    root = "/resources/speech/corpora/m-ailabs-speech/it_IT"
     return build_path_to_transcript_dict_m_ailabs_template(root)
 
 
 def build_path_to_transcript_dict_m_ailabs_polish():
-    root = '/resources/speech/corpora/m-ailabs-speech/pl_PL'
+    root = "/resources/speech/corpora/m-ailabs-speech/pl_PL"
     return build_path_to_transcript_dict_m_ailabs_template(root)
 
 
 def build_path_to_transcript_dict_m_ailabs_russian():
-    root = '/resources/speech/corpora/m-ailabs-speech/ru_RU'
+    root = "/resources/speech/corpora/m-ailabs-speech/ru_RU"
     return build_path_to_transcript_dict_m_ailabs_template(root)
 
 
 def build_path_to_transcript_dict_m_ailabs_ukrainian():
-    root = '/resources/speech/corpora/m-ailabs-speech/uk_UK'
+    root = "/resources/speech/corpora/m-ailabs-speech/uk_UK"
     return build_path_to_transcript_dict_m_ailabs_template(root)
 
 
 def build_path_to_transcript_dict_cml_tts_template(root):
     path_to_transcript = dict()
 
-    for split in ['train', 'dev', 'test']:
-        with open(Path(root, f'{split}.csv'), 'r', encoding='utf-8') as f:
-            reader = DictReader(f, delimiter='|')
+    for split in ["train", "dev", "test"]:
+        with open(Path(root, f"{split}.csv"), "r", encoding="utf-8") as f:
+            reader = DictReader(f, delimiter="|")
             for row in reader:
-                path_to_transcript[str(Path(root, row['wav_filename']))] = row['transcript'].strip()
+                path_to_transcript[str(Path(root, row["wav_filename"]))] = row[
+                    "transcript"
+                ].strip()
 
     return path_to_transcript
 
 
 def build_path_to_transcript_dict_cml_tts_dutch():
-    root = '/resources/speech/corpora/cml_tts/cml_tts_dataset_dutch_v0.1'
+    root = "/resources/speech/corpora/cml_tts/cml_tts_dataset_dutch_v0.1"
     return build_path_to_transcript_dict_cml_tts_template(root)
 
 
 def build_path_to_transcript_dict_cml_tts_french():
-    root = '/resources/speech/corpora/cml_tts/cml_tts_dataset_french_v0.1'
+    root = "/resources/speech/corpora/cml_tts/cml_tts_dataset_french_v0.1"
     return build_path_to_transcript_dict_cml_tts_template(root)
 
 
 def build_path_to_transcript_dict_cml_tts_german():
-    root = '/resources/speech/corpora/cml_tts/cml_tts_dataset_german_v0.1'
+    root = "/resources/speech/corpora/cml_tts/cml_tts_dataset_german_v0.1"
     return build_path_to_transcript_dict_cml_tts_template(root)
 
 
 def build_path_to_transcript_dict_cml_tts_italian():
-    root = '/resources/speech/corpora/cml_tts/cml_tts_dataset_italian_v0.1'
+    root = "/resources/speech/corpora/cml_tts/cml_tts_dataset_italian_v0.1"
     return build_path_to_transcript_dict_cml_tts_template(root)
 
 
 def build_path_to_transcript_dict_cml_tts_polish():
-    root = '/resources/speech/corpora/cml_tts/cml_tts_dataset_polish_v0.1'
+    root = "/resources/speech/corpora/cml_tts/cml_tts_dataset_polish_v0.1"
     return build_path_to_transcript_dict_cml_tts_template(root)
 
 
 def build_path_to_transcript_dict_cml_tts_portuguese():
-    root = '/resources/speech/corpora/cml_tts/cml_tts_dataset_portuguese_v0.1'
+    root = "/resources/speech/corpora/cml_tts/cml_tts_dataset_portuguese_v0.1"
     return build_path_to_transcript_dict_cml_tts_template(root)
 
 
 def build_path_to_transcript_dict_cml_tts_spanish():
-    root = '/resources/speech/corpora/cml_tts/cml_tts_dataset_spanish_v0.1'
+    root = "/resources/speech/corpora/cml_tts/cml_tts_dataset_spanish_v0.1"
     return build_path_to_transcript_dict_cml_tts_template(root)
 
 
-def build_path_to_transcript_dict_mms_template(lang, root='/resources/speech/corpora/mms_synthesized_bible_speech'):
+def build_path_to_transcript_dict_mms_template(
+    lang, root="/resources/speech/corpora/mms_synthesized_bible_speech"
+):
     path_to_transcript = dict()
 
     i = 0
-    with open(Path(root, 'bible_texts', f'{lang}.txt'), 'r', encoding='utf-8') as f:
+    with open(Path(root, "bible_texts", f"{lang}.txt"), "r", encoding="utf-8") as f:
         for line in f:
-            path = Path(root, 'bible_audios', lang, f'{i}.wav')
+            path = Path(root, "bible_audios", lang, f"{i}.wav")
             if path.exists():
                 path_to_transcript[str(path)] = line.strip()
                 i += 1
@@ -2214,5 +2480,21 @@ def build_path_to_transcript_dict_mms_template(lang, root='/resources/speech/cor
     return path_to_transcript
 
 
-if __name__ == '__main__':
+def build_path_to_transcript_dict_shan():
+    root = "D:\\Work\\Developer\\ShanTTS\Datasets\\asr-dataset"
+
+    path_to_transcript_dict = dict()
+    with open(root + "/metadata.csv", mode="r", encoding="utf8") as f:
+        transcripts = f.read().split("\n")[1:]
+    for transcript in transcripts:
+        if transcript.strip() != "":
+            parsed_line = transcript.split(",")
+            # audio_file = f"{root}/{parsed_line[0]}"
+            audio_file = f"{root}\{parsed_line[0]}".replace("/", "\\")
+            path_to_transcript_dict[audio_file] = parsed_line[1]
+
+    return path_to_transcript_dict
+
+
+if __name__ == "__main__":
     pass
