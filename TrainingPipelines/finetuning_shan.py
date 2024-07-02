@@ -41,7 +41,7 @@ def run(
         save_dir = model_dir
     else:
         save_dir = os.path.join(
-            MODELS_DIR, "ToucanTTS_Finetuning_Shan"
+            MODELS_DIR, "ToucanTTS_Shan"
         )  # RENAME TO SOMETHING MEANINGFUL FOR YOUR DATA
     os.makedirs(save_dir, exist_ok=True)
 
