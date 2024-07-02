@@ -2482,16 +2482,21 @@ def build_path_to_transcript_dict_mms_template(
 
 def build_path_to_transcript_dict_shan():
     root = "D:\\Work\\Developer\\ShanTTS\Datasets\\asr-dataset"
-
     path_to_transcript_dict = dict()
-    with open(root + "/metadata.csv", mode="r", encoding="utf8") as f:
-        transcripts = f.read().split("\n")[1:]
-    for transcript in transcripts:
-        if transcript.strip() != "":
-            parsed_line = transcript.split(",")
-            # audio_file = f"{root}/{parsed_line[0]}"
-            audio_file = f"{root}\{parsed_line[0]}".replace("/", "\\")
-            path_to_transcript_dict[audio_file] = parsed_line[1]
+
+    with open(Path(root, "metadata.csv"), mode="r", encoding="utf-8") as f:
+        reader = DictReader(
+            f,
+            delimiter=",",
+            fieldnames=[
+                "file_name",
+                "transcription",
+            ],
+        )
+        for row in reader:
+            path_to_transcript_dict[str(Path(root, row["file_name"]))] = row[
+                "transcription"
+            ].strip()
 
     return path_to_transcript_dict
 
