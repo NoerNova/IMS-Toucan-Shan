@@ -10,7 +10,7 @@ from Utility.storage_config import MODELS_DIR
 if __name__ == "__main__":
     warnings.filterwarnings("ignore", category=UserWarning)
 
-    PATH_TO_TTS_MODEL = os.path.join(MODELS_DIR, "ToucanTTS_Finetuning_Shan", "best.pt")
+    PATH_TO_TTS_MODEL = os.path.join(MODELS_DIR, "ToucanTTS_Shan", "best.pt")
     PATH_TO_REFERENCE_SPEAKER = ""  # audios/speaker_references_for_testing/female_high_voice.wav  audios/speaker_references_for_testing/male_low_voice.wav
     LANGUAGE = "shn"
     device = "cuda" if torch.cuda.is_available() else "cpu"
