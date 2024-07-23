@@ -5,6 +5,7 @@ from typing import cast
 
 import librosa
 import matplotlib.pyplot as plt
+from matplotlib import font_manager as fm, rcParams
 import pyloudnorm
 import sounddevice
 import soundfile
@@ -30,36 +31,56 @@ from Utility.utils import float2pcm
 
 class ToucanTTSInterface(torch.nn.Module):
 
-    def __init__(self,
-                 device="cpu",  # device that everything computes on. If a cuda device is available, this can speed things up by an order of magnitude.
-                 tts_model_path=os.path.join(MODELS_DIR, f"ToucanTTS_Meta", "best.pt"),  # path to the ToucanTTS checkpoint or just a shorthand if run standalone
-                 vocoder_model_path=os.path.join(MODELS_DIR, f"Vocoder", "best.pt"),  # path to the Vocoder checkpoint
-                 language="eng",  # initial language of the model, can be changed later with the setter methods
-                 enhance=None  # legacy argument
-                 ):
+    def __init__(
+        self,
+        device="cpu",  # device that everything computes on. If a cuda device is available, this can speed things up by an order of magnitude.
+        tts_model_path=os.path.join(
+            MODELS_DIR, f"ToucanTTS_Shan", "best.pt"
+        ),  # path to the ToucanTTS checkpoint or just a shorthand if run standalone
+        vocoder_model_path=os.path.join(
+            MODELS_DIR, f"Vocoder", "best.pt"
+        ),  # path to the Vocoder checkpoint
+        language="eng",  # initial language of the model, can be changed later with the setter methods
+        enhance=None,  # legacy argument
+    ):
         super().__init__()
         self.device = device
         if not tts_model_path.endswith(".pt"):
             # default to shorthand system
-            tts_model_path = os.path.join(MODELS_DIR, f"ToucanTTS_{tts_model_path}", "best.pt")
+            tts_model_path = os.path.join(
+                MODELS_DIR, f"ToucanTTS_{tts_model_path}", "best.pt"
+            )
         if "USER" not in os.environ:
-            os.environ["USER"] = ""  # that's the case under Windows, but omegaconf needs this
+            os.environ["USER"] = (
+                ""  # that's the case under Windows, but omegaconf needs this
+            )
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            watermark_conf = cast(DictConfig, OmegaConf.load("InferenceInterfaces/audioseal_wm_16bits.yaml"))
+            watermark_conf = cast(
+                DictConfig,
+                OmegaConf.load("InferenceInterfaces/audioseal_wm_16bits.yaml"),
+            )
             self.watermark = create_generator(watermark_conf)
-            self.watermark.load_state_dict(torch.load("Models/audioseal/generator.pth", map_location="cpu")["model"])  # downloaded from https://dl.fbaipublicfiles.com/audioseal/6edcf62f/generator.pth originally
+            self.watermark.load_state_dict(
+                torch.load("Models/audioseal/generator.pth", map_location="cpu")[
+                    "model"
+                ]
+            )  # downloaded from https://dl.fbaipublicfiles.com/audioseal/6edcf62f/generator.pth originally
 
         ################################
         #   build text to phone        #
         ################################
-        self.text2phone = ArticulatoryCombinedTextFrontend(language=language, add_silence_to_end=True)
+        self.text2phone = ArticulatoryCombinedTextFrontend(
+            language=language, add_silence_to_end=True
+        )
 
         #####################################
         #   load phone to features model    #
         #####################################
-        checkpoint = torch.load(tts_model_path, map_location='cpu')
-        self.phone2mel = ToucanTTS(weights=checkpoint["model"], config=checkpoint["config"])
+        checkpoint = torch.load(tts_model_path, map_location="cpu")
+        self.phone2mel = ToucanTTS(
+            weights=checkpoint["model"], config=checkpoint["config"]
+        )
         with torch.no_grad():
             self.phone2mel.store_inverse_all()  # this also removes weight norm
         self.phone2mel = self.phone2mel.to(torch.device(device))
@@ -67,9 +88,13 @@ class ToucanTTSInterface(torch.nn.Module):
         ######################################
         #  load features to style models     #
         ######################################
-        self.speaker_embedding_func_ecapa = EncoderClassifier.from_hparams(source="speechbrain/spkrec-ecapa-voxceleb",
-                                                                           run_opts={"device": str(device)},
-                                                                           savedir=os.path.join(MODELS_DIR, "Embedding", "speechbrain_speaker_embedding_ecapa"))
+        self.speaker_embedding_func_ecapa = EncoderClassifier.from_hparams(
+            source="speechbrain/spkrec-ecapa-voxceleb",
+            run_opts={"device": str(device)},
+            savedir=os.path.join(
+                MODELS_DIR, "Embedding", "speechbrain_speaker_embedding_ecapa"
+            ),
+        )
 
         ################################
         #  load mel to wave model      #
@@ -106,11 +131,17 @@ class ToucanTTSInterface(torch.nn.Module):
             for path in path_to_reference_audio:
                 wave, sr = soundfile.read(path)
                 if len(wave.shape) > 1:  # oh no, we found a stereo audio!
-                    if len(wave[0]) == 2:  # let's figure out whether we need to switch the axes
+                    if (
+                        len(wave[0]) == 2
+                    ):  # let's figure out whether we need to switch the axes
                         wave = wave.transpose()  # if yes, we switch the axes.
                 wave = librosa.to_mono(wave)
-                wave = Resample(orig_freq=sr, new_freq=16000).to(self.device)(torch.tensor(wave, device=self.device, dtype=torch.float32))
-                speaker_embedding = self.speaker_embedding_func_ecapa.encode_batch(wavs=wave.to(self.device).squeeze().unsqueeze(0)).squeeze()
+                wave = Resample(orig_freq=sr, new_freq=16000).to(self.device)(
+                    torch.tensor(wave, device=self.device, dtype=torch.float32)
+                )
+                speaker_embedding = self.speaker_embedding_func_ecapa.encode_batch(
+                    wavs=wave.to(self.device).squeeze().unsqueeze(0)
+                ).squeeze()
                 speaker_embs.append(speaker_embedding)
             self.default_utterance_embedding = sum(speaker_embs) / len(speaker_embs)
 
@@ -122,40 +153,66 @@ class ToucanTTSInterface(torch.nn.Module):
         self.set_accent_language(lang_id=lang_id)
 
     def set_phonemizer_language(self, lang_id):
-        self.text2phone = ArticulatoryCombinedTextFrontend(language=lang_id, add_silence_to_end=True)
+        self.text2phone = ArticulatoryCombinedTextFrontend(
+            language=lang_id, add_silence_to_end=True
+        )
 
     def set_accent_language(self, lang_id):
-        if lang_id in ['ajp', 'ajt', 'lak', 'lno', 'nul', 'pii', 'plj', 'slq', 'smd', 'snb', 'tpw', 'wya', 'zua', 'en-us', 'en-sc', 'fr-be', 'fr-sw', 'pt-br', 'spa-lat', 'vi-ctr', 'vi-so']:
-            if lang_id == 'vi-so' or lang_id == 'vi-ctr':
-                lang_id = 'vie'
-            elif lang_id == 'spa-lat':
-                lang_id = 'spa'
-            elif lang_id == 'pt-br':
-                lang_id = 'por'
-            elif lang_id == 'fr-sw' or lang_id == 'fr-be':
-                lang_id = 'fra'
-            elif lang_id == 'en-sc' or lang_id == 'en-us':
-                lang_id = 'eng'
+        if lang_id in [
+            "ajp",
+            "ajt",
+            "lak",
+            "lno",
+            "nul",
+            "pii",
+            "plj",
+            "slq",
+            "smd",
+            "snb",
+            "tpw",
+            "wya",
+            "zua",
+            "en-us",
+            "en-sc",
+            "fr-be",
+            "fr-sw",
+            "pt-br",
+            "spa-lat",
+            "vi-ctr",
+            "vi-so",
+        ]:
+            if lang_id == "vi-so" or lang_id == "vi-ctr":
+                lang_id = "vie"
+            elif lang_id == "spa-lat":
+                lang_id = "spa"
+            elif lang_id == "pt-br":
+                lang_id = "por"
+            elif lang_id == "fr-sw" or lang_id == "fr-be":
+                lang_id = "fra"
+            elif lang_id == "en-sc" or lang_id == "en-us":
+                lang_id = "eng"
             else:
                 # no clue where these others are even coming from, they are not in ISO 639-2
-                lang_id = 'eng'
+                lang_id = "eng"
 
         self.lang_id = get_language_id(lang_id).to(self.device)
 
-    def forward(self,
-                text,
-                view=False,
-                duration_scaling_factor=1.0,
-                pitch_variance_scale=1.0,
-                energy_variance_scale=1.0,
-                pause_duration_scaling_factor=1.0,
-                durations=None,
-                pitch=None,
-                energy=None,
-                input_is_phones=False,
-                return_plot_as_filepath=False,
-                loudness_in_db=-24.0,
-                glow_sampling_temperature=0.2):
+    def forward(
+        self,
+        text,
+        view=False,
+        duration_scaling_factor=1.0,
+        pitch_variance_scale=1.0,
+        energy_variance_scale=1.0,
+        pause_duration_scaling_factor=1.0,
+        durations=None,
+        pitch=None,
+        energy=None,
+        input_is_phones=False,
+        return_plot_as_filepath=False,
+        loudness_in_db=-24.0,
+        glow_sampling_temperature=0.2,
+    ):
         """
         duration_scaling_factor: reasonable values are 0.8 < scale < 1.2.
                                      1.0 means no scaling happens, higher values increase durations for the whole
@@ -168,19 +225,23 @@ class ToucanTTSInterface(torch.nn.Module):
                                    lower values decrease variance of the energy curve.
         """
         with torch.inference_mode():
-            phones = self.text2phone.string_to_tensor(text, input_phonemes=input_is_phones).to(torch.device(self.device))
-            mel, durations, pitch, energy = self.phone2mel(phones,
-                                                           return_duration_pitch_energy=True,
-                                                           utterance_embedding=self.default_utterance_embedding,
-                                                           durations=durations,
-                                                           pitch=pitch,
-                                                           energy=energy,
-                                                           lang_id=self.lang_id,
-                                                           duration_scaling_factor=duration_scaling_factor,
-                                                           pitch_variance_scale=pitch_variance_scale,
-                                                           energy_variance_scale=energy_variance_scale,
-                                                           pause_duration_scaling_factor=pause_duration_scaling_factor,
-                                                           glow_sampling_temperature=glow_sampling_temperature)
+            phones = self.text2phone.string_to_tensor(
+                text, input_phonemes=input_is_phones
+            ).to(torch.device(self.device))
+            mel, durations, pitch, energy = self.phone2mel(
+                phones,
+                return_duration_pitch_energy=True,
+                utterance_embedding=self.default_utterance_embedding,
+                durations=durations,
+                pitch=pitch,
+                energy=energy,
+                lang_id=self.lang_id,
+                duration_scaling_factor=duration_scaling_factor,
+                pitch_variance_scale=pitch_variance_scale,
+                energy_variance_scale=energy_variance_scale,
+                pause_duration_scaling_factor=pause_duration_scaling_factor,
+                glow_sampling_temperature=glow_sampling_temperature,
+            )
 
             wave, _, _ = self.vocoder(mel.unsqueeze(0))
             wave = wave.squeeze().cpu()
@@ -193,15 +254,32 @@ class ToucanTTSInterface(torch.nn.Module):
             # if the audio is too short, a value error will arise
             pass
         with torch.inference_mode():
-            wave = (torch.tensor(wave) + 0.1 * self.watermark.get_watermark(torch.tensor(wave).to(self.device).unsqueeze(0).unsqueeze(0)).squeeze().detach().cpu()).detach().numpy()
+            wave = (
+                (
+                    torch.tensor(wave)
+                    + 0.1
+                    * self.watermark.get_watermark(
+                        torch.tensor(wave).to(self.device).unsqueeze(0).unsqueeze(0)
+                    )
+                    .squeeze()
+                    .detach()
+                    .cpu()
+                )
+                .detach()
+                .numpy()
+            )
 
         if view or return_plot_as_filepath:
             fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(9, 5))
 
-            ax.imshow(mel.cpu().numpy(), origin="lower", cmap='GnBu')
+            # fpath = "./src/fonts/Shan.ttf"
+            fpath = os.path.join(os.path.dirname(__file__), "src/fonts/Shan.ttf")
+            prop = fm.FontProperties(fname=fpath)
+
+            ax.imshow(mel.cpu().numpy(), origin="lower", cmap="GnBu")
             ax.yaxis.set_visible(False)
             duration_splits, label_positions = cumsum_durations(durations.cpu().numpy())
-            ax.xaxis.grid(True, which='minor')
+            ax.xaxis.grid(True, which="minor")
             ax.set_xticks(label_positions, minor=False)
             if input_is_phones:
                 phones = text.replace(" ", "|")
@@ -217,24 +295,44 @@ class ToucanTTSInterface(torch.nn.Module):
                 prev_word_boundary = 0
                 word_label_positions = list()
                 for word_boundary in word_boundaries:
-                    word_label_positions.append((word_boundary + prev_word_boundary) / 2)
+                    word_label_positions.append(
+                        (word_boundary + prev_word_boundary) / 2
+                    )
                     prev_word_boundary = word_boundary
-                word_label_positions.append((duration_splits[-1] + prev_word_boundary) / 2)
+                word_label_positions.append(
+                    (duration_splits[-1] + prev_word_boundary) / 2
+                )
 
-                secondary_ax = ax.secondary_xaxis('bottom')
+                secondary_ax = ax.secondary_xaxis("bottom")
                 secondary_ax.tick_params(axis="x", direction="out", pad=24)
                 secondary_ax.set_xticks(word_label_positions, minor=False)
-                secondary_ax.set_xticklabels(text.split())
-                secondary_ax.tick_params(axis='x', colors='orange')
-                secondary_ax.xaxis.label.set_color('orange')
+                secondary_ax.set_xticklabels(text.split(), fontproperties=prop)
+                secondary_ax.tick_params(axis="x", colors="orange")
+                secondary_ax.xaxis.label.set_color("orange")
             except ValueError:
                 ax.set_title(text)
             except IndexError:
                 ax.set_title(text)
 
-            ax.vlines(x=duration_splits, colors="green", linestyles="solid", ymin=0, ymax=120, linewidth=0.5)
-            ax.vlines(x=word_boundaries, colors="orange", linestyles="solid", ymin=0, ymax=120, linewidth=1.0)
-            plt.subplots_adjust(left=0.02, bottom=0.2, right=0.98, top=.9, wspace=0.0, hspace=0.0)
+            ax.vlines(
+                x=duration_splits,
+                colors="green",
+                linestyles="solid",
+                ymin=0,
+                ymax=120,
+                linewidth=0.5,
+            )
+            ax.vlines(
+                x=word_boundaries,
+                colors="orange",
+                linestyles="solid",
+                ymin=0,
+                ymax=120,
+                linewidth=1.0,
+            )
+            plt.subplots_adjust(
+                left=0.02, bottom=0.2, right=0.98, top=0.9, wspace=0.0, hspace=0.0
+            )
             ax.set_aspect("auto")
 
             if return_plot_as_filepath:
@@ -242,18 +340,20 @@ class ToucanTTSInterface(torch.nn.Module):
                 return wave, sr, "tmp.png"
         return wave, sr
 
-    def read_to_file(self,
-                     text_list,
-                     file_location,
-                     duration_scaling_factor=1.0,
-                     pitch_variance_scale=1.0,
-                     energy_variance_scale=1.0,
-                     pause_duration_scaling_factor=1.0,
-                     silent=False,
-                     dur_list=None,
-                     pitch_list=None,
-                     energy_list=None,
-                     glow_sampling_temperature=0.2):
+    def read_to_file(
+        self,
+        text_list,
+        file_location,
+        duration_scaling_factor=1.0,
+        pitch_variance_scale=1.0,
+        energy_variance_scale=1.0,
+        pause_duration_scaling_factor=1.0,
+        silent=False,
+        dur_list=None,
+        pitch_list=None,
+        energy_list=None,
+        glow_sampling_temperature=0.2,
+    ):
         """
         Args:
             silent: Whether to be verbose about the process
@@ -280,39 +380,51 @@ class ToucanTTSInterface(torch.nn.Module):
             energy_list = []
         silence = torch.zeros([14300])
         wav = silence.clone()
-        for (text, durations, pitch, energy) in itertools.zip_longest(text_list, dur_list, pitch_list, energy_list):
+        for text, durations, pitch, energy in itertools.zip_longest(
+            text_list, dur_list, pitch_list, energy_list
+        ):
             if text.strip() != "":
                 if not silent:
                     print("Now synthesizing: {}".format(text))
-                spoken_sentence, sr = self(text,
-                                           durations=durations.to(self.device) if durations is not None else None,
-                                           pitch=pitch.to(self.device) if pitch is not None else None,
-                                           energy=energy.to(self.device) if energy is not None else None,
-                                           duration_scaling_factor=duration_scaling_factor,
-                                           pitch_variance_scale=pitch_variance_scale,
-                                           energy_variance_scale=energy_variance_scale,
-                                           pause_duration_scaling_factor=pause_duration_scaling_factor,
-                                           glow_sampling_temperature=glow_sampling_temperature)
+                spoken_sentence, sr = self(
+                    text,
+                    durations=(
+                        durations.to(self.device) if durations is not None else None
+                    ),
+                    pitch=pitch.to(self.device) if pitch is not None else None,
+                    energy=energy.to(self.device) if energy is not None else None,
+                    duration_scaling_factor=duration_scaling_factor,
+                    pitch_variance_scale=pitch_variance_scale,
+                    energy_variance_scale=energy_variance_scale,
+                    pause_duration_scaling_factor=pause_duration_scaling_factor,
+                    glow_sampling_temperature=glow_sampling_temperature,
+                )
                 spoken_sentence = torch.tensor(spoken_sentence).cpu()
                 wav = torch.cat((wav, spoken_sentence, silence), 0)
-        soundfile.write(file=file_location, data=float2pcm(wav), samplerate=sr, subtype="PCM_16")
+        soundfile.write(
+            file=file_location, data=float2pcm(wav), samplerate=sr, subtype="PCM_16"
+        )
 
-    def read_aloud(self,
-                   text,
-                   view=False,
-                   duration_scaling_factor=1.0,
-                   pitch_variance_scale=1.0,
-                   energy_variance_scale=1.0,
-                   blocking=False,
-                   glow_sampling_temperature=0.2):
+    def read_aloud(
+        self,
+        text,
+        view=False,
+        duration_scaling_factor=1.0,
+        pitch_variance_scale=1.0,
+        energy_variance_scale=1.0,
+        blocking=False,
+        glow_sampling_temperature=0.2,
+    ):
         if text.strip() == "":
             return
-        wav, sr = self(text,
-                       view,
-                       duration_scaling_factor=duration_scaling_factor,
-                       pitch_variance_scale=pitch_variance_scale,
-                       energy_variance_scale=energy_variance_scale,
-                       glow_sampling_temperature=glow_sampling_temperature)
+        wav, sr = self(
+            text,
+            view,
+            duration_scaling_factor=duration_scaling_factor,
+            pitch_variance_scale=pitch_variance_scale,
+            energy_variance_scale=energy_variance_scale,
+            glow_sampling_temperature=glow_sampling_temperature,
+        )
         silence = torch.zeros([sr // 2])
         wav = torch.cat((silence, torch.tensor(wav), silence), 0).numpy()
         sounddevice.play(float2pcm(wav), samplerate=sr)

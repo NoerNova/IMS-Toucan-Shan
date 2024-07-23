@@ -72,40 +72,13 @@ class ControllableInterface:
 
         phones = self.model.text2phone.get_phone_string(prompt)
         if len(phones) > 1800:
-            if language == "deu":
-                prompt = "Deine Eingabe war zu lang. Bitte versuche es entweder mit einem kürzeren Text oder teile ihn in mehrere Teile auf."
-            elif language == "ell":
-                prompt = "Η εισήγησή σας ήταν πολύ μεγάλη. Παρακαλώ δοκιμάστε είτε ένα μικρότερο κείμενο είτε χωρίστε το σε διάφορα μέρη."
-            elif language == "spa":
-                prompt = "Su entrada es demasiado larga. Por favor, intente un texto más corto o divídalo en varias partes."
-            elif language == "fin":
-                prompt = "Vastauksesi oli liian pitkä. Kokeile joko lyhyempää tekstiä tai jaa se useampaan osaan."
-            elif language == "rus":
-                prompt = "Ваш текст слишком длинный. Пожалуйста, попробуйте либо сократить текст, либо разделить его на несколько частей."
-            elif language == "hun":
-                prompt = "Túl hosszú volt a bevitele. Kérjük, próbáljon meg rövidebb szöveget írni, vagy ossza több részre."
-            elif language == "nld":
-                prompt = "Uw input was te lang. Probeer een kortere tekst of splits het in verschillende delen."
-            elif language == "fra":
-                prompt = "Votre saisie était trop longue. Veuillez essayer un texte plus court ou le diviser en plusieurs parties."
-            elif language == "pol":
-                prompt = "Twój wpis był zbyt długi. Spróbuj skrócić tekst lub podzielić go na kilka części."
-            elif language == "por":
-                prompt = "O seu contributo foi demasiado longo. Por favor, tente um texto mais curto ou divida-o em várias partes."
-            elif language == "ita":
-                prompt = "Il tuo input era troppo lungo. Per favore, prova un testo più corto o dividilo in più parti."
-            elif language == "cmn":
-                prompt = "你的输入太长了。请尝试使用较短的文本或将其拆分为多个部分。"
-            elif language == "vie":
-                prompt = "Đầu vào của bạn quá dài. Vui lòng thử một văn bản ngắn hơn hoặc chia nó thành nhiều phần."
-            else:
-                prompt = "Your input was too long. Please try either a shorter text or split it into several parts."
-                if self.current_language != "eng":
-                    self.model.set_phonemizer_language("eng")
-                    self.current_language = "eng"
-                if self.current_accent != "eng":
-                    self.model.set_accent_language("eng")
-                    self.current_accent = "eng"
+            prompt = "Your input was too long. Please try either a shorter text or split it into several parts."
+            if self.current_language != "eng":
+                self.model.set_phonemizer_language("eng")
+                self.current_language = "eng"
+            if self.current_accent != "eng":
+                self.model.set_accent_language("eng")
+                self.current_accent = "eng"
 
         print(prompt)
         wav, sr, fig = self.model(
@@ -145,27 +118,27 @@ class TTSWebUI:
                 gr.Textbox(
                     lines=2,
                     placeholder="write what you want the synthesis to read here...",
-                    value="The woods are lovely, dark and deep, but I have promises to keep, and miles to go, before I sleep.",
+                    value="မႂ်ႇသုင်ၶႃႈ ယူႇလီၵိၼ်ဝၢၼ် ၵတ်းယဵၼ်ၸႂ် မိူၼ်ၾႃႉၾူၼ်လူမ်းလီယူႇၶႃႈ ၼေႃႈ",
                     label="Text input",
                 ),
                 gr.Dropdown(
                     text_selection,
                     type="value",
-                    value="English Text (eng)",
+                    value="Shan Text (shn)",
                     label="Select the Language of the Text (type on your keyboard to find it quickly)",
                 ),
                 gr.Slider(
                     minimum=0,
                     maximum=available_artificial_voices,
                     step=1,
-                    value=279,
+                    value=1000,
                     label="Random Seed for the artificial Voice",
                 ),
                 gr.Slider(
                     minimum=0.7,
                     maximum=1.3,
                     step=0.1,
-                    value=1.0,
+                    value=1.2,
                     label="Duration Scale",
                 ),
                 gr.Slider(
@@ -186,14 +159,14 @@ class TTSWebUI:
                     minimum=-10.0,
                     maximum=10.0,
                     step=0.1,
-                    value=0.0,
+                    value=10.0,
                     label="Femininity / Masculinity",
                 ),
                 gr.Slider(
                     minimum=-10.0,
                     maximum=10.0,
                     step=0.1,
-                    value=0.0,
+                    value=-10.0,
                     label="Voice Depth",
                 ),
             ],
@@ -242,6 +215,12 @@ class TTSWebUI:
 
 if __name__ == "__main__":
     with gr.Blocks() as demo:
+        gr.Markdown(
+            "<p align='center' style='font-size: 20px;'><a href='https://github.com/DigitalPhonetics/IMS-Toucan'>IMS-Toucan</a>: Multilingual and Controllable Text-to-Speech Toolkit of the Speech and Language Technologies Group at the University of Stuttgart.</p>"
+        )
+        gr.HTML(
+            "<p align='center' style='font-size: 18px;'><a href='https://github.com/NoerNova/IMS-Toucan-Shan'>IMS-Toucan-Shan</a>: Contain the Shan finetune script</p>"
+        )
         TTSWebUI(gpu_id="cuda" if torch.cuda.is_available() else "cpu").render()
 
     demo.launch()
